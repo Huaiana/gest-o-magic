@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Estoque - React + Flask</title>
+    <!-- React & Babel via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS para o visual -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        function App() {
+            const [produtos, setProdutos] = React.useState([]);
+            const [form, setForm] = React.useState({ nome: '', categoria: '', quantidade: '', unidade: 'un' });
+
+            // Buscar produtos do Backend (Flask)
+            const carregarProdutos = async () => {
+                const res = await fetch('http://localhost:3000/api/produtos');
+                const data = await res.json();
+                setProdutos(data);
+            };
+
+            React.useEffect(() => {
+                carregarProdutos();
+            }, []);
+
+            // Enviar novo produto para o Flask
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                await fetch('http://localhost:3000/api/produtos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(form)
+                });
+                setForm({ nome: '', categoria: '', quantidade: '', unidade: 'un' });
+                carregarProdutos(); // Atualiza a lista na tela
+            };
+
+            return (
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <h1 class="text-3xl font-bold text-gray-800">📦 Gestão de Estoque</h1>
+
+                    {/* Formulário de Cadastro */}
+                    <form onSubmit={handleSubmit} class="bg-white p-6 rounded-lg shadow-md grid grid-cols-2 gap-4">
+                        <input type="text" placeholder="Nome do Produto" value={form.nome} 
+                               onChange={e => setForm({...form, nome: e.target.value})} required class="p-2 border rounded" />
+                        
+                        <input type="text" placeholder="Categoria" value={form.categoria} 
+                               onChange={e => setForm({...form, categoria: e.target.value})} required class="p-2 border rounded" />
+                        
+                        <input type="number" placeholder="Quantidade" value={form.quantidade} 
+                               onChange={e => setForm({...form, quantidade: e.target.value})} required class="p-2 border rounded" />
+                        
+                        <select value={form.unidade} onChange={e => setForm({...form, unidade: e.target.value})} class="p-2 border rounded">
+                            <option value="un">Unidade (un)</option>
+                            <option value="kg">Quilograma (kg)</option>
+                            <option value="L">Litro (L)</option>
+                        </select>
+
+                        <button type="submit" class="col-span-2 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-semibold">
+                            Cadastrar Produto
+                        </button>
+                    </form>
+
+                    {/* Tabela de Produtos */}
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="p-3">ID</th>
+                                    <th class="p-3">Nome</th>
+                                    <th class="p-3">Categoria</th>
+                                    <th class="p-3">Quantidade</th>
+                                    <th class="p-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {produtos.map(p => (
+                                    <tr key={p.id} class="border-b hover:bg-gray-50">
+                                        <td class="p-3">{p.id}</td>
+                                        <td class="p-3 font-medium">{p.nome}</td>
+                                        <td class="p-3">{p.categoria}</td>
+                                        <td class="p-3">{p.quantidade} {p.unidade}</td>
+                                        <td class="p-3">
+                                            <span class={`px-2 py-1 rounded text-xs font-bold ${p.estoque ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                {p.estoque ? 'Em Estoque' : 'Esgotado'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
