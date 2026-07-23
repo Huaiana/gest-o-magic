@@ -35,6 +35,6 @@ app.post("/movimentos", movimentoEstoqueController.criar);
 app.get("/relatorios", relatorioController.gerar);
 
 // Inicialização do servidor
-app.listen(8080, () => {
-    console.log("Servidor rodando na porta http://localhost:8080");
+app.listen(5500, () => {
+    console.log("Servidor rodando na porta http://localhost:5500");
 });
