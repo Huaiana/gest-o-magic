@@ -1,0 +1,75 @@
+# ─── PRODUTOS ────────────────────────────────────────────────────────────────
+
+### Adicionar produto
+POST http://localhost:3000/produtos
+Content-Type: application/json
+
+{
+  "nome": "pet gato",
+  "quantidade": 100,
+  "estoque": 20
+}
+
+###
+
+### Listar todos os produtos
+GET http://localhost:3000/produtos
+
+###
+
+### Buscar produto por id
+GET http://localhost:3000/produtos/2
+
+###
+
+### Buscar produto por nome (busca parcial)
+GET http://localhost:3000/produtos?nome=Pet gato
+
+###
+
+# ─── relatorio ──────────────────────────────────────────────────────────────────
+
+### relatorio de produto
+POST http://localhost:3000/item Produro
+Content-Type: application/json
+
+{
+  "produtoId": 1,
+  "itens": [
+    { "produtoId": 2, "quantidade": 1 }
+  ]
+}
+
+###
+
+### relatorio de produto
+POST http://localhost:3000/relatorio    
+Content-Type: application/json
+
+{
+  "produtoId": 1,
+  "itens": [
+    { "produtoId": 1, "quantidade": 2 },
+    { "produtoId": 89, "quantidade": 1 }
+  ]
+}
+
+###
+
+### relatorio de produto com estoque insuficiente (deve retornar erro)
+POST http://localhost:3000/relatorio
+Content-Type: application/json
+
+{
+  "produtoId": 1,
+  "itens": [
+    { "produtoId": 1, "quantidade": 9999 }
+  ]
+}
+
+###
+
+### listar todos os itens do estoque
+GET http://localhost:3000/itemdoestoque
+
+###
