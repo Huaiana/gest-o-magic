@@ -5,131 +5,123 @@ const dbPath = path.resolve(__dirname, "../../banco.db");
 const db = new Database(dbPath);
 
 db.pragma("foreign_keys = ON");
-   
 
 db.exec(`
-  CREATE TABLE IF NOT EXISTS categoria (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome      VARCHAR(100) NOT NULL UNIQUE,
-    descricao TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS fornecedor (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome      VARCHAR(100) NOT NULL,
-    cnpj      VARCHAR(20)  NOT NULL UNIQUE,
-    telefone  VARCHAR(20),
-    endereco  TEXT,
-    email     VARCHAR(100) UNIQUE NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS usuario (
-    id    INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome  VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    senha VARCHAR(255) NOT NULL
+  CREATE TABLE IF NOT EXISTS categorias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,           
+    unidade TEXT NOT NULL,        
+    descricao TEXT NOT NULL       
   );
 
   CREATE TABLE IF NOT EXISTS produtos (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome          VARCHAR(150) NOT NULL,
-    valor_venda   REAL NOT NULL CHECK (valor_venda > 0),
-    categoria_id  INTEGER NOT NULL,
-    fornecedor_id INTEGER NOT NULL,
-    estoque       INTEGER NOT NULL DEFAULT 0 CHECK (estoque >= 0),
-    FOREIGN KEY (categoria_id)  REFERENCES categoria(id),
-    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    categoria_id INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    unidade TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    estoque BOOLEAN NOT NULL DEFAULT 1,
+    data_entrada TEXT NOT NULL,
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE RESTRICT
   );
 
-  CREATE TABLE IF NOT EXISTS pedidos (
-    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    usuario_id          INTEGER NOT NULL,
-    data_pedido         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    valor_total_pedido  REAL NOT NULL CHECK (valor_total_pedido >= 0),
-    status_pedido       VARCHAR(20) NOT NULL DEFAULT 'Pendente',
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id)
+  CREATE TABLE IF NOT EXISTS adicionar_produto (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    categoria_id INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    unidade TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    data_entrada TEXT NOT NULL,
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE RESTRICT
   );
 
-  CREATE TABLE IF NOT EXISTS item_pedido (
-    id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    pedido_id      INTEGER NOT NULL,
-    produto_id     INTEGER NOT NULL,
-    quantidade     INTEGER NOT NULL CHECK (quantidade > 0),
-    preco_unitario REAL    NOT NULL CHECK (preco_unitario > 0),
-    subtotal       REAL    NOT NULL,
-    FOREIGN KEY (pedido_id)  REFERENCES pedidos(id),
-    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+  CREATE TABLE IF NOT EXISTS estoque (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    categoria_id INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    unidade TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    data_entrada TEXT NOT NULL,
+    data_saida TEXT,
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE RESTRICT
   );
 
-  CREATE INDEX IF NOT EXISTS idx_produtos_nome ON produtos(nome);
-  CREATE INDEX IF NOT EXISTS idx_produtos_categoria ON produtos(categoria_id);
+  CREATE TABLE IF NOT EXISTS movimentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    produto_id INTEGER NOT NULL,
+    categoria_id INTEGER NOT NULL,
+    tipo_movimento TEXT NOT NULL,
+    quantidade INTEGER NOT NULL,
+    unidade TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    data_movimento TEXT NOT NULL,
+    FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE,
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE RESTRICT
+  );
 
-  -- Trigger: controle de estoque
-  CREATE TRIGGER IF NOT EXISTS baixar_estoque_venda
-  BEFORE INSERT ON item_pedido
-  BEGIN
-    SELECT CASE
-      WHEN (SELECT estoque FROM produtos WHERE id = NEW.produto_id) < NEW.quantidade
-      THEN RAISE(ABORT, 'Estoque insuficiente')
-    END;
-
-    UPDATE produtos
-    SET estoque = estoque - NEW.quantidade
-    WHERE id = NEW.produto_id;
-  END;
-
-  -- View: relatório
-  CREATE VIEW IF NOT EXISTS relatorio_vendas AS
-  SELECT 
-    ped.id AS pedido_id,
-    u.nome AS nome_usuario,
-    pr.nome AS nome_produto,
-    ip.quantidade,
-    ip.preco_unitario,
-    (ip.quantidade * ip.preco_unitario) AS subtotal_calculado,
-    ped.data_pedido,
-    ped.status_pedido
-  FROM item_pedido ip
-  JOIN pedidos ped ON ip.pedido_id = ped.id
-  JOIN usuario u ON ped.usuario_id = u.id
-  JOIN produtos pr ON ip.produto_id = pr.id;
+  CREATE TABLE IF NOT EXISTS relatorios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tipo_relatorio TEXT NOT NULL,
+    datahora TEXT NOT NULL,
+    nome TEXT NOT NULL,
+    categoria_id INTEGER NOT NULL,
+    quantidade_estoque INTEGER NOT NULL,
+    unidade TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    total_movimentos INTEGER NOT NULL,
+    total_entrada INTEGER NOT NULL,
+    total_saida INTEGER NOT NULL,
+    estoque_atual INTEGER NOT NULL,
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE RESTRICT
+  );
 `);
 
-
-
-export const inserirProduto = (nome: any, valor_venda: number, estoque: number, catID: any, fornId: any) => {
-  if (!nome || valor_venda <= 0 || estoque < 0) {
+// Função para inserir produto ajustada ao schema real
+export const inserirProduto = (
+  nome: string,
+  categoria_id: number,
+  quantidade: number,
+  unidade: string,
+  tipo: string,
+  estoque: boolean,
+  data_entrada: string
+) => {
+  if (!nome || quantidade < 0) {
     throw new Error("Dados inválidos");
   }
 
   const stmt = db.prepare(`
-    INSERT INTO produtos (nome, valor_venda, estoque, categoria_id, fornecedor_id)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO produtos (nome, categoria_id, quantidade, unidade, tipo, estoque, data_entrada)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
-  return stmt.run(nome, valor_venda, estoque, catID, fornId);
+  return stmt.run(nome, categoria_id, quantidade, unidade, tipo, estoque ? 1 : 0, data_entrada);
 };
 
-
-
+// Função para buscar produtos com o JOIN correto na tabela categorias
 export const buscarProdutos = () => {
   return db.prepare(`
     SELECT 
       p.id,
       p.nome,
-      p.valor_venda,
+      p.quantidade,
+      p.unidade,
+      p.tipo,
       p.estoque,
-      c.nome AS categoria,
-      f.nome AS fornecedor
+      p.data_entrada,
+      c.nome AS categoria_nome,
+      c.descricao AS categoria_descricao
     FROM produtos p
-    JOIN categoria c ON p.categoria_id = c.id
-    JOIN fornecedor f ON p.fornecedor_id = f.id
+    JOIN categorias c ON p.categoria_id = c.id
   `).all();
 };
 
-
+// Função para buscar relatórios apontando para a tabela correta 'relatorios'
 export const buscarRelatorio = () => {
-  return db.prepare(`SELECT * FROM relatorio_vendas`).all(); 
+  return db.prepare(`SELECT * FROM relatorios`).all(); 
 };
 
 export default db;
