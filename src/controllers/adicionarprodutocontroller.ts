@@ -63,9 +63,13 @@ export class AdicionarProdutoController {
             if (!categoria || categoria.trim().length === 0) {
                 return res.status(400).json({ message: "O campo 'categoria' é obrigatório." });
             }
+            if (!unidade || unidade.trim().length === 0) {
+                return res.status(400).json({ message: "O campo 'unidade' é obrigatório." });
+            }
             if (quantidade === undefined || quantidade <= 0) {
                 return res.status(400).json({ message: "A 'quantidade' deve ser maior que zero." });
-            }
+            }   
+
             if (estoque === undefined) {
                 return res.status(400).json({ message: "O campo 'estoque' é obrigatório." });
             }
@@ -77,6 +81,7 @@ export class AdicionarProdutoController {
                 nome,
                 categoria,
                 quantidade,
+                unidade,
                 estoque,
                 dataEntrada
             });
@@ -88,3 +93,4 @@ export class AdicionarProdutoController {
         }
     };
 }
+

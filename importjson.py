@@ -13,6 +13,7 @@ class Adicionar_Produto:
     nome: str
     categoria: str #sobremesa, carne, pimenta, filé de mignom, etc
     quantidade: int
+    unidade: str #kg, litro, unidade, etc
     data_entrada: datetime
 
 
@@ -22,6 +23,7 @@ class Produto:
     nome: str
     categoria: str #sobremesa, carne, pimenta, filé de mignom, etc
     quantidade: int
+    unidade: str #kg, litro, unidade, etc
     estoque: bool
     data_entrada: datetime
 
@@ -32,6 +34,7 @@ class Estoque:
     nome: str
     categoria: str #sobremesa, carne, pimenta, filé de mignom, etc
     quantidade: int
+    unidade: str #kg, litro, unidade, etc
     data_entrada: datetime
     data_saida: datetime
 
@@ -43,6 +46,7 @@ class MovimentoEstoque:
     categoria: str  #sobremesa, carne, pimenta, filé de mignom, etc
     tipo_movimento: str  # 'entrada' ou 'saida'
     quantidade: int
+    unidade: str  # kg, litro, unidade, etc
     data_movimento: datetime
 
 
@@ -54,6 +58,8 @@ class Relatorio:
     nome: str #produto 
     categoria: str  #sobremesa, carne, pimenta, filé de mignom, etc
     quantidade_estoque: int
+    unidade: str  # kg, litro, unidade, etc
+    produtos: list[Produto]
     total_movimentos: int
     total_entrada: int
     total_saida: int

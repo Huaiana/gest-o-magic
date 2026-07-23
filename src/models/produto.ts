@@ -1,7 +1,8 @@
 export interface produto {
     id: number;
     nome: string; //produto
-    categoria: string; //sobremesa, carne, pimenta, filé de mignom, etc 
+    categoria: string; //sobremesa, carne, pimenta, filé de mignom, etc
+    unidade: string; //kg, litro, unidade, etc
     quantidade: number;
     estoque: boolean;
     dataEntrada: Date;

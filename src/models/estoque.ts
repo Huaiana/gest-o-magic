@@ -4,6 +4,7 @@ export interface Estoque {
   nome: string; //produto 
   categoria: string; //sobremesa, carne, pimenta, filé de mignom, etc
   quantidade: number;
+  unidade: string; //kg, litro, unidade, etc
   dataEntrada: Date;
   dataSaida: Date | null;
 }
