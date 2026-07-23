@@ -1,7 +1,7 @@
 # ─── PRODUTOS ────────────────────────────────────────────────────────────────
 
 ### Adicionar produto
-POST http://localhost:3000/produtos
+POST http://localhost:8080/produtos
 Content-Type: application/json
 
 {
@@ -13,24 +13,24 @@ Content-Type: application/json
 ###
 
 ### Listar todos os produtos
-GET http://localhost:3000/produtos
+GET http://localhost:8080/produtos
 
 ###
 
 ### Buscar produto por id
-GET http://localhost:3000/produtos/2
+GET http://localhost:8080/produtos/2
 
 ###
 
 ### Buscar produto por nome (busca parcial)
-GET http://localhost:3000/produtos?nome=Pet gato
+GET http://localhost:8080/produtos?nome=Pet gato
 
 ###
 
 # ─── relatorio ──────────────────────────────────────────────────────────────────
 
 ### relatorio de produto
-POST http://localhost:3000/item Produro
+POST http://localhost:8080/item Produro
 Content-Type: application/json
 
 {
@@ -43,7 +43,7 @@ Content-Type: application/json
 ###
 
 ### relatorio de produto
-POST http://localhost:3000/relatorio    
+POST http://localhost:8080/relatorio    
 Content-Type: application/json
 
 {
@@ -57,7 +57,7 @@ Content-Type: application/json
 ###
 
 ### relatorio de produto com estoque insuficiente (deve retornar erro)
-POST http://localhost:3000/relatorio
+POST http://localhost:8080/relatorio
 Content-Type: application/json
 
 {
@@ -70,6 +70,6 @@ Content-Type: application/json
 ###
 
 ### listar todos os itens do estoque
-GET http://localhost:3000/itemdoestoque
+GET http://localhost:8080/itemdoestoque
 
 ###
