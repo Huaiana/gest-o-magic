@@ -23,14 +23,14 @@ GET http://localhost:3000/produtos/2
 ###
 
 ### Buscar produto por nome (busca parcial)
-GET http://localhost:3000/produtos?nome=Pet gato
+GET http://localhost:3000/produtos?nome=Pet%20gato
 
 ###
 
-# ─── relatorio ──────────────────────────────────────────────────────────────────
+# ─── RELATÓRIO ────────────────────────────────────────────────────────────────
 
 ### relatorio de produto
-POST http://localhost:3000/item Produro
+POST http://localhost:3000/item-produto
 Content-Type: application/json
 
 {
