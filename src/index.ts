@@ -33,6 +33,6 @@ app.get('/', (req: Request, res: Response) => {
   })
 })
 
-app.listen(5500, () => {
-  console.log('Servidor rodando em http://localhost:5500')
+app.listen(3000, () => {
+  console.log('Servidor rodando em http://localhost:3000')
 })
