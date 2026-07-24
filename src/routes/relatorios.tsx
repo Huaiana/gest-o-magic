@@ -39,11 +39,19 @@ function ReportsPage() {
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
+  const [productId, setProductId] = useState("");
 
   const codes = useMemo(() => buildProductCodes(products), [products]);
   const categories = useMemo(
     () => Array.from(new Set(products.map((p) => p.categoria))).sort(),
     [products],
+  );
+  const productsForSelect = useMemo(
+    () =>
+      (category ? products.filter((p) => p.categoria === category) : products)
+        .slice()
+        .sort((a, b) => a.nome.localeCompare(b.nome)),
+    [products, category],
   );
 
   const generateMutation = useMutation({
@@ -61,14 +69,19 @@ function ReportsPage() {
       const t = new Date(m.data_movimento).getTime();
       if (t < startTs || t > endTs) return false;
       if (category && m.categoria !== category) return false;
+      if (productId && m.product_id !== productId) return false;
       return true;
     });
-  }, [movements, dateStart, dateEnd, category]);
+  }, [movements, dateStart, dateEnd, category, productId]);
 
-  const filteredProducts = useMemo(
-    () => (category ? products.filter((p) => p.categoria === category) : products),
-    [products, category],
-  );
+  const filteredProducts = useMemo(() => {
+    let list = products;
+    if (category) list = list.filter((p) => p.categoria === category);
+    if (productId) list = list.filter((p) => p.id === productId);
+    return list;
+  }, [products, category, productId]);
+
+  const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
 
   const totalEntrada = filteredMovements
     .filter((m) => m.tipo === "entrada")
@@ -78,6 +91,19 @@ function ReportsPage() {
     .reduce((s, m) => s + (m.quantidade ?? 0), 0);
   const totalItens = filteredProducts.length;
   const volumeTotal = filteredProducts.reduce((s, p) => s + (p.quantidade ?? 0), 0);
+
+  // Per-product breakdown (entradas / saídas / estoque atual)
+  const perProduct = useMemo(() => {
+    return filteredProducts
+      .map((p) => {
+        const movs = filteredMovements.filter((m) => m.product_id === p.id);
+        const entradas = movs.filter((m) => m.tipo === "entrada").reduce((s, m) => s + m.quantidade, 0);
+        const saidas = movs.filter((m) => m.tipo === "saida").reduce((s, m) => s + m.quantidade, 0);
+        return { product: p, entradas, saidas, movs: movs.length };
+      })
+      .sort((a, b) => a.product.nome.localeCompare(b.product.nome));
+  }, [filteredProducts, filteredMovements]);
+
 
   const today = new Date().toLocaleDateString("pt-BR");
 
