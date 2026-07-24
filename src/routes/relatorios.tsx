@@ -39,11 +39,19 @@ function ReportsPage() {
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
+  const [productId, setProductId] = useState("");
 
   const codes = useMemo(() => buildProductCodes(products), [products]);
   const categories = useMemo(
     () => Array.from(new Set(products.map((p) => p.categoria))).sort(),
     [products],
+  );
+  const productsForSelect = useMemo(
+    () =>
+      (category ? products.filter((p) => p.categoria === category) : products)
+        .slice()
+        .sort((a, b) => a.nome.localeCompare(b.nome)),
+    [products, category],
   );
 
   const generateMutation = useMutation({
@@ -61,14 +69,19 @@ function ReportsPage() {
       const t = new Date(m.data_movimento).getTime();
       if (t < startTs || t > endTs) return false;
       if (category && m.categoria !== category) return false;
+      if (productId && m.product_id !== productId) return false;
       return true;
     });
-  }, [movements, dateStart, dateEnd, category]);
+  }, [movements, dateStart, dateEnd, category, productId]);
 
-  const filteredProducts = useMemo(
-    () => (category ? products.filter((p) => p.categoria === category) : products),
-    [products, category],
-  );
+  const filteredProducts = useMemo(() => {
+    let list = products;
+    if (category) list = list.filter((p) => p.categoria === category);
+    if (productId) list = list.filter((p) => p.id === productId);
+    return list;
+  }, [products, category, productId]);
+
+  const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
 
   const totalEntrada = filteredMovements
     .filter((m) => m.tipo === "entrada")
@@ -78,6 +91,19 @@ function ReportsPage() {
     .reduce((s, m) => s + (m.quantidade ?? 0), 0);
   const totalItens = filteredProducts.length;
   const volumeTotal = filteredProducts.reduce((s, p) => s + (p.quantidade ?? 0), 0);
+
+  // Per-product breakdown (entradas / saídas / estoque atual)
+  const perProduct = useMemo(() => {
+    return filteredProducts
+      .map((p) => {
+        const movs = filteredMovements.filter((m) => m.product_id === p.id);
+        const entradas = movs.filter((m) => m.tipo === "entrada").reduce((s, m) => s + m.quantidade, 0);
+        const saidas = movs.filter((m) => m.tipo === "saida").reduce((s, m) => s + m.quantidade, 0);
+        return { product: p, entradas, saidas, movs: movs.length };
+      })
+      .sort((a, b) => a.product.nome.localeCompare(b.product.nome));
+  }, [filteredProducts, filteredMovements]);
+
 
   const today = new Date().toLocaleDateString("pt-BR");
 
@@ -110,7 +136,7 @@ function ReportsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-card border border-border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-4 gap-3 no-print">
+      <div className="bg-card border border-border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-5 gap-3 no-print">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Data Inicial</label>
           <input
@@ -135,7 +161,7 @@ function ReportsPage() {
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => { setCategory(e.target.value); setProductId(""); }}
               className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
             >
               <option value="">Todas</option>
@@ -145,15 +171,29 @@ function ReportsPage() {
             </select>
           </div>
         </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Produto</label>
+          <select
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
+          >
+            <option value="">Todos</option>
+            {productsForSelect.map((p) => (
+              <option key={p.id} value={p.id}>{p.nome}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex items-end">
           <button
-            onClick={() => { setDateStart(""); setDateEnd(""); setCategory(""); }}
+            onClick={() => { setDateStart(""); setDateEnd(""); setCategory(""); setProductId(""); }}
             className="w-full px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition"
           >
             Limpar filtros
           </button>
         </div>
       </div>
+
 
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
@@ -177,8 +217,10 @@ function ReportsPage() {
               <p className="mt-1">Período: {dateStart || "—"} a {dateEnd || "—"}</p>
             )}
             {category && <p>Categoria: {category}</p>}
+            {productId && <p>Produto: {productMap.get(productId)?.nome}</p>}
           </div>
         </div>
+
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -218,6 +260,91 @@ function ReportsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Per-product entradas/saídas breakdown */}
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-foreground mb-3">Entradas e saídas por produto</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-secondary/40 text-muted-foreground">
+                <tr>
+                  <th className="text-left px-3 py-2 font-medium">Código</th>
+                  <th className="text-left px-3 py-2 font-medium">Produto</th>
+                  <th className="text-right px-3 py-2 font-medium">Entradas</th>
+                  <th className="text-right px-3 py-2 font-medium">Saídas</th>
+                  <th className="text-right px-3 py-2 font-medium">Estoque atual</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {perProduct.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                      Sem dados no filtro selecionado.
+                    </td>
+                  </tr>
+                ) : (
+                  perProduct.map(({ product, entradas, saidas }) => (
+                    <tr key={product.id}>
+                      <td className="px-3 py-2 font-mono text-xs">{codes.get(product.id)}</td>
+                      <td className="px-3 py-2 text-foreground">{product.nome}</td>
+                      <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
+                      <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
+                      <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Movement detail — only when a single product is selected */}
+        {productId && (
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-foreground mb-3">
+              Movimentações de {productMap.get(productId)?.nome}
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-secondary/40 text-muted-foreground">
+                  <tr>
+                    <th className="text-left px-3 py-2 font-medium">Data</th>
+                    <th className="text-left px-3 py-2 font-medium">Tipo</th>
+                    <th className="text-right px-3 py-2 font-medium">Quantidade</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredMovements.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-3 py-6 text-center text-muted-foreground">
+                        Nenhuma movimentação no período.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredMovements
+                      .slice()
+                      .sort((a, b) => new Date(b.data_movimento).getTime() - new Date(a.data_movimento).getTime())
+                      .map((m) => (
+                        <tr key={m.id}>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            {new Date(m.data_movimento).toLocaleString("pt-BR")}
+                          </td>
+                          <td className={`px-3 py-2 font-medium ${m.tipo === "entrada" ? "text-status-success" : "text-status-danger"}`}>
+                            {m.tipo === "entrada" ? "Entrada" : "Saída"}
+                          </td>
+                          <td className="px-3 py-2 text-right text-foreground">
+                            {m.tipo === "entrada" ? "+" : "-"}{m.quantidade} {m.unidade}
+                          </td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+
 
         <div className="mt-6 flex flex-wrap gap-6 text-sm border-t border-border pt-4">
           <div><span className="text-muted-foreground">Total de Itens:</span> <strong className="text-foreground">{totalItens}</strong></div>
