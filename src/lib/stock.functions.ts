@@ -43,6 +43,7 @@ export const addProduct = createServerFn({ method: "POST" })
         unidade: data.unidade,
         estoque,
         data_entrada: now,
+        ultima_reposicao: data.quantidade > 0 ? now : null,
       })
       .select()
       .single();
@@ -63,6 +64,7 @@ export const addProduct = createServerFn({ method: "POST" })
 
     return product;
   });
+
 
 export const updateProduct = createServerFn({ method: "POST" })
   .inputValidator((input) =>
