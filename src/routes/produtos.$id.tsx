@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Package, ArrowDownCircle, ArrowUpCircle } from "lucide
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import {
   getProducts,
   updateProduct,
@@ -22,6 +23,9 @@ export const Route = createFileRoute("/produtos/$id")({
       { title: "Editar Produto - EstoqueSync" },
       { name: "description", content: "Edite produto ou registre movimentação." },
     ],
+  }),
+  validateSearch: z.object({
+    action: z.enum(["entrada", "saida"]).optional(),
   }),
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(productsQueryOptions());
