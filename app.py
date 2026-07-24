@@ -2,7 +2,13 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import sqlite3
 from datetime import datetime
+import os
+from flask import Flask
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+template_folder = os.path.join(BASE_DIR, 'templates')
+
+app = Flask(__name__, template_folder=template_folder)
 app = Flask(__name__, template_folder='.')
 CORS(app)
 
@@ -211,5 +217,3 @@ def add_relatorio():
     return jsonify({"status": "success"}), 201
 
 if __name__ == '__main__':
-    init_db()
-    app.run(debug=True, port=3000)
