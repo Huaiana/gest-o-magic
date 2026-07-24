@@ -287,6 +287,9 @@
                 <button onclick="switchTab('movimentos')">🔄 Movimentações</button>
             </li>
             <li class="nav-item">
+                <button onclick="switchTab('estoque')">📋 Estoque</button>
+            </li>
+            <li class="nav-item">
                 <button onclick="switchTab('relatorios')">📈 Relatórios</button>
             </li>
         </ul>
@@ -368,7 +371,6 @@
                     <input type="text" id="search-produto" placeholder="Buscar por nome..." oninput="renderProdutos()">
                     <select id="filter-categoria" onchange="renderProdutos()">
                         <option value="">Todas as Categorias</option>
-                        <option value="filé de mignom">Filé de Mignon</option>
                         <option value="carne">Carne</option>
                         <option value="sobremesa">Sobremesa</option>
                         <option value="pimenta">Pimenta</option>
@@ -415,7 +417,6 @@
                         <div class="form-group">
                             <label for="add-categoria">Categoria</label>
                             <select id="add-categoria" required>
-                                <option value="filé de mignom">Filé de Mignon</option>
                                 <option value="carne">Carne</option>
                                 <option value="sobremesa">Sobremesa</option>
                                 <option value="pimenta">Pimenta</option>
@@ -526,7 +527,6 @@
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label for="edit-categoria">Categoria</label>
                     <select id="edit-categoria" required>
-                        <option value="filé de mignom">Filé de Mignon</option>
                         <option value="carne">Carne</option>
                         <option value="sobremesa">Sobremesa</option>
                         <option value="pimenta">Pimenta</option>
@@ -561,7 +561,8 @@
         let state = {
             produtos: [],
             movimentos: [],
-            relatorios: []
+            relatorios: [],
+            estoque: []
         };
 
         async function fetchAll() {
@@ -569,12 +570,14 @@
                 const [resProd, resMov, resRel] = await Promise.all([
                     fetch(`${API_URL}/produtos`),
                     fetch(`${API_URL}/movimentos`),
-                    fetch(`${API_URL}/relatorios`)
+                    fetch(`${API_URL}/relatorios`),
+                    fetch('${API-URL}/estoques'),
                 ]);
 
                 state.produtos = await resProd.json();
                 state.movimentos = await resMov.json();
                 state.relatorios = await resRel.json();
+                state.estoque = await resEst.json();
 
                 renderAll();
             } catch (err) {
@@ -861,6 +864,7 @@
             renderProdutos();
             renderMovimentos();
             renderRelatorios();
+            renderEstoque();
         }
 
         // Init App
