@@ -1,517 +1,83 @@
-<!DOCTYPE html>
-<html lang="pt-BR" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EstoqueSync - Gestão de Estoque Inteligente</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- ROTEAMENTO E LÓGICA FRONTEND -->
+<script>
+    // Inicializa ícones na carga inicial
+    lucide.createIcons();
 
-    <!-- Configuração da Paleta de Cores Oficial -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        bgMain: '#0F172A',
-                        cardBg: '#1E293B',
-                        brandPrimary: '#2563EB',
-                        brandSecondary: '#3B82F6',
-                        textPrimary: '#F8FAFC',
-                        textSecondary: '#94A3B8',
-                        statusSuccess: '#22c55e',
-                        statusWarning: '#eab308',
-                        statusDanger: '#ef4444'
-                    }
-                }
-            }
-        }
-    </script>
+    // Roteador de Telas da SPA
+    function navigate(view) {
+        const views = ['landing', 'login', 'dashboard', 'produtos', 'relatorios'];
+        
+        views.forEach(v => {
+            const element = document.getElementById(`view-${v}`);
+            if (element) element.classList.add('hidden');
+        });
 
-    <!-- Estilos Globais e CSS de Impressão (A4) -->
-    <style>
-        @media print {
-            body {
-                background-color: #ffffff !important;
-                color: #000000 !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .print-only {
-                display: block !important;
-            }
-            .print-area {
-                background-color: #ffffff !important;
-                color: #000000 !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                width: 100% !important;
-            }
-            .print-area table {
-                color: #000000 !important;
-            }
-            .print-area th, .print-area td {
-                border-color: #cbd5e1 !important;
-            }
-        }
-    </style>
-</head>
-<body class="bg-bgMain text-textPrimary font-sans antialiased min-h-screen flex flex-col justify-between">
+        const targetView = document.getElementById(`view-${view}`);
+        if (targetView) targetView.classList.remove('hidden');
 
-    <!-- TOAST DE NOTIFICAÇÃO -->
-    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 bg-cardBg border-l-4 border-brandPrimary p-4 rounded-xl shadow-2xl flex items-center space-x-3 text-textPrimary no-print">
-        <i data-lucide="check-circle" class="w-5 h-5 text-statusSuccess"></i>
-        <span id="toast-message" class="text-sm font-medium">Ação realizada com sucesso!</span>
-    </div>
-
-    <!-- NAVBAR PRINCIPAL -->
-    <header class="bg-cardBg border-b border-slate-800 sticky top-0 z-40 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigate('landing')">
-                <div class="bg-brandPrimary p-2 rounded-lg">
-                    <i data-lucide="box" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="font-bold text-lg tracking-wide text-textPrimary">EstoqueSync</span>
-            </div>
-
-            <!-- Menus de Navegação (Corrigido o duplicado) -->
-            <nav class="hidden md:flex items-center space-x-1">
-                <button onclick="navigate('dashboard')" class="px-3 py-2 rounded-lg text-sm font-medium text-textSecondary hover:text-textPrimary hover:bg-slate-800 transition">Dashboard</button>
-                <button onclick="navigate('produtos')" class="px-3 py-2 rounded-lg text-sm font-medium text-textSecondary hover:text-textPrimary hover:bg-slate-800 transition">Produtos</button>
-                <button onclick="navigate('relatorios')" class="px-3 py-2 rounded-lg text-sm font-medium text-textSecondary hover:text-textPrimary hover:bg-slate-800 transition">Relatórios</button>
-                <button onclick="navigate('produtos')" class="px-3 py-2 rounded-lg text-sm font-medium text-textSecondary hover:text-textPrimary hover:bg-slate-800 transition">Estoque</button>
-            </nav>
-
-            <!-- Ações Diretas -->
-            <div class="flex items-center space-x-3">
-                <button onclick="navigate('login')" class="bg-brandPrimary hover:bg-brandSecondary text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md flex items-center space-x-2">
-                    <i data-lucide="log-in" class="w-4 h-4"></i>
-                    <span>Entrar</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- ÁREA DE CONTEÚDO PRINCIPAL (SPA) -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-
-        <!-- 1. TELA: LANDING PAGE -->
-        <section id="view-landing" class="space-y-16 py-8">
-            <div class="text-center max-w-3xl mx-auto space-y-6">
-                <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                    Gestão de Estoque Inteligente
-                </h1>
-                <p class="text-lg text-textSecondary">
-                    Controle produtos, acompanhe movimentações e gere relatórios em uma plataforma simples, rápida e eficiente.
-                </p>
-                <div class="flex justify-center items-center space-x-4 pt-2">
-                    <button onclick="navigate('dashboard')" class="bg-brandPrimary hover:bg-brandSecondary text-white px-6 py-3 rounded-xl font-medium transition shadow-lg flex items-center space-x-2">
-                        <span>Acessar Sistema</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                    <a href="#recursos" class="bg-cardBg hover:bg-slate-800 text-textPrimary border border-slate-700 px-6 py-3 rounded-xl font-medium transition">
-                        Ver Recursos
-                    </a>
-                </div>
-            </div>
-
-            <!-- Cards de Recursos -->
-            <div id="recursos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-6">
-                <div class="bg-cardBg p-6 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition space-y-3">
-                    <div class="p-3 bg-blue-500/10 w-fit rounded-xl text-brandSecondary">
-                        <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold">Dashboard</h3>
-                    <p class="text-textSecondary text-sm">Visão geral e simplificada das informações essenciais do seu estoque.</p>
-                </div>
-                <div class="bg-cardBg p-6 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition space-y-3">
-                    <div class="p-3 bg-blue-500/10 w-fit rounded-xl text-brandSecondary">
-                        <i data-lucide="arrow-up-down" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold">Controle de Estoque</h3>
-                    <p class="text-textSecondary text-sm">Acompanhamento da quantidade disponível e alerta de níveis baixos.</p>
-                </div>
-                <div class="bg-cardBg p-6 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition space-y-3">
-                    <div class="p-3 bg-blue-500/10 w-fit rounded-xl text-brandSecondary">
-                        <i data-lucide="package" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold">Cadastro de Produtos</h3>
-                    <p class="text-textSecondary text-sm">Cadastro e manutenção de itens com histórico e categorização fácil.</p>
-                </div>
-                <div class="bg-cardBg p-6 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition space-y-3">
-                    <div class="p-3 bg-blue-500/10 w-fit rounded-xl text-brandSecondary">
-                        <i data-lucide="file-text" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold">Relatórios</h3>
-                    <p class="text-textSecondary text-sm">Geração de relatórios completos para impressão A4 e exportação em PDF.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2. TELA: LOGIN -->
-        <section id="view-login" class="hidden max-w-md mx-auto my-12 bg-cardBg p-8 rounded-2xl border border-slate-800 shadow-2xl space-y-6">
-            <div class="text-center space-y-2">
-                <div class="inline-block bg-brandPrimary p-3 rounded-xl mb-2">
-                    <i data-lucide="box" class="w-8 h-8 text-white"></i>
-                </div>
-                <h2 class="text-2xl font-bold">Acessar o Sistema</h2>
-                <p class="text-sm text-textSecondary">Digite suas credenciais para entrar</p>
-            </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-textSecondary mb-1">Usuário</label>
-                    <input type="text" required class="w-full bg-bgMain border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-textPrimary focus:outline-none focus:border-brandPrimary" placeholder="admin">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-textSecondary mb-1">Senha</label>
-                    <input type="password" required class="w-full bg-bgMain border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-textPrimary focus:outline-none focus:border-brandPrimary" placeholder="••••••••">
-                </div>
-                <div class="flex items-center justify-between text-sm">
-                    <label class="flex items-center space-x-2 text-textSecondary cursor-pointer">
-                        <input type="checkbox" class="rounded bg-bgMain border-slate-700 text-brandPrimary focus:ring-0">
-                        <span class="text-xs">Lembrar usuário</span>
-                    </label>
-                </div>
-                <button type="submit" class="w-full bg-brandPrimary hover:bg-brandSecondary text-white py-3 rounded-lg font-medium transition shadow-lg">
-                    Entrar
-                </button>
-            </form>
-        </section>
-
-        <!-- 3. TELA: DASHBOARD -->
-        <section id="view-dashboard" class="hidden space-y-8">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold">Dashboard</h2>
-                    <p class="text-textSecondary text-sm">Visão consolidada do inventário e operações.</p>
-                </div>
-                <div class="flex flex-wrap gap-2 no-print">
-                    <button onclick="navigate('produtos')" class="bg-brandPrimary hover:bg-brandSecondary text-white px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>Novo Produto</span>
-                    </button>
-                    <button onclick="navigate('relatorios')" class="bg-cardBg border border-slate-700 hover:bg-slate-800 text-textPrimary px-3.5 py-2 rounded-lg text-sm font-medium flex items-center space-x-2">
-                        <i data-lucide="printer" class="w-4 h-4"></i>
-                        <span>Gerar Relatório</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Cards Superiores -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-textSecondary font-medium">Produtos Cadastrados</p>
-                        <h3 class="text-2xl font-bold mt-1">124</h3>
-                    </div>
-                    <div class="p-3 bg-blue-500/10 text-brandSecondary rounded-xl">
-                        <i data-lucide="package" class="w-6 h-6"></i>
-                    </div>
-                </div>
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-textSecondary font-medium">Entradas</p>
-                        <h3 class="text-2xl font-bold text-statusSuccess mt-1">+450</h3>
-                    </div>
-                    <div class="p-3 bg-green-500/10 text-statusSuccess rounded-xl">
-                        <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
-                    </div>
-                </div>
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-textSecondary font-medium">Saídas</p>
-                        <h3 class="text-2xl font-bold text-statusDanger mt-1">-310</h3>
-                    </div>
-                    <div class="p-3 bg-red-500/10 text-statusDanger rounded-xl">
-                        <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
-                    </div>
-                </div>
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-textSecondary font-medium">Produtos em Alerta</p>
-                        <h3 class="text-2xl font-bold text-statusWarning mt-1">5</h3>
-                    </div>
-                    <div class="p-3 bg-yellow-500/10 text-statusWarning rounded-xl">
-                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gráfico + Tabela de Estoque Baixo -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 bg-cardBg p-5 rounded-xl border border-slate-800 space-y-4">
-                    <h3 class="font-semibold text-base">Movimentação por Período</h3>
-                    <div class="h-64">
-                        <canvas id="dashboardChart"></canvas>
-                    </div>
-                </div>
-                <div class="bg-cardBg p-5 rounded-xl border border-slate-800 space-y-4">
-                    <h3 class="font-semibold text-base flex items-center space-x-2">
-                        <i data-lucide="alert-circle" class="w-5 h-5 text-statusWarning"></i>
-                        <span>Estoque Baixo</span>
-                    </h3>
-                    <div class="divide-y divide-slate-800">
-                        <div class="py-3 flex justify-between items-center text-sm">
-                            <div>
-                                <p class="font-medium text-textPrimary">Petit Gateau</p>
-                                <p class="text-xs text-textSecondary">Cód: PRD-002</p>
-                            </div>
-                            <span class="px-2.5 py-1 bg-yellow-500/10 text-statusWarning font-semibold rounded-md text-xs">3 un.</span>
-                        </div>
-                        <div class="py-3 flex justify-between items-center text-sm">
-                            <div>
-                                <p class="font-medium text-textPrimary">Pimenta</p>
-                                <p class="text-xs text-textSecondary">Cód: PRD-019</p>
-                            </div>
-                            <span class="px-2.5 py-1 bg-yellow-500/10 text-statusWarning font-semibold rounded-md text-xs">5 un.</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. TELA: PRODUTOS -->
-        <section id="view-produtos" class="hidden space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold">Cadastro de Produtos</h2>
-                    <p class="text-textSecondary text-sm">Gerencie o catálogo e níveis de estoque.</p>
-                </div>
-                <button onclick="triggerToast('Modal de cadastro aberto!')" class="bg-brandPrimary hover:bg-brandSecondary text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 w-fit">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>Cadastrar Item</span>
-                </button>
-            </div>
-
-            <div class="bg-cardBg rounded-xl border border-slate-800 overflow-hidden">
-                <!-- Barra de Busca e Filtro de Categorias Atualizado -->
-                <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row gap-3 justify-between">
-                    <input type="text" placeholder="Pesquisar por produto ou código..." class="bg-bgMain border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-textPrimary focus:outline-none focus:border-brandPrimary sm:w-80">
-                    <select class="bg-bgMain border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-textPrimary focus:outline-none">
-                        <option>Todas as Categorias</option>
-                        <option>Contra</option>
-                        <option>Filé Mignon</option>
-                        <option>Pimenta</option>
-                        <option>sobremesa</option>
-                    </select>
-                </div>
-                <!-- Tabela de Produtos (Cotado em peças e unidades mantidas) -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-textSecondary">
-                        <thead class="bg-bgMain text-xs uppercase text-textSecondary border-b border-slate-800">
-                            <tr>
-                                <th class="p-4">Código</th>
-                                <th class="p-4">Nome</th>
-                                <th class="p-4">Categoria</th>
-                                <th class="p-4 text-right">Qtd</th>
-                                <th class="p-4 text-center">Status</th>
-                                <th class="p-4 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800">
-                            <tr class="hover:bg-slate-800/40">
-                                <td class="p-4 font-mono text-xs text-textPrimary">PRD-001</td>
-                                <td class="p-4 font-medium text-textPrimary">Filé Mignon (Peça)</td>
-                                <td class="p-4">Carne</td>
-                                <td class="p-4 text-right font-semibold text-textPrimary">42 un.</td>
-                                <td class="p-4 text-center"><span class="px-2.5 py-1 bg-green-500/10 text-statusSuccess rounded-md text-xs font-medium">Normal</span></td>
-                                <td class="p-4 text-right space-x-2">
-                                    <button class="text-brandSecondary hover:underline">Editar</button>
-                                    <button onclick="triggerToast('Item removido com sucesso!')" class="text-statusDanger hover:underline">Excluir</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-800/40">
-                                <td class="p-4 font-mono text-xs text-textPrimary">PRD-002</td>
-                                <td class="p-4 font-medium text-textPrimary">Petit Gateau</td>
-                                <td class="p-4">#sobremesa</td>
-                                <td class="p-4 text-right font-semibold text-textPrimary">3 un.</td>
-                                <td class="p-4 text-center"><span class="px-2.5 py-1 bg-yellow-500/10 text-statusWarning rounded-md text-xs font-medium">Baixo</span></td>
-                                <td class="p-4 text-right space-x-2">
-                                    <button class="text-brandSecondary hover:underline">Editar</button>
-                                    <button onclick="triggerToast('Item removido com sucesso!')" class="text-statusDanger hover:underline">Excluir</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. TELA: RELATÓRIOS & IMPRESSÃO -->
-        <section id="view-relatorios" class="hidden space-y-6">
-            <div class="bg-cardBg p-6 rounded-xl border border-slate-800 space-y-4 no-print">
-                <h2 class="text-xl font-bold">Módulo de Relatórios</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs text-textSecondary mb-1">Data Inicial</label>
-                        <input type="date" class="w-full bg-bgMain border border-slate-700 rounded-lg px-3 py-2 text-sm text-textPrimary">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-textSecondary mb-1">Data Final</label>
-                        <input type="date" class="w-full bg-bgMain border border-slate-700 rounded-lg px-3 py-2 text-sm text-textPrimary">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-textSecondary mb-1">Categoria</label>
-                        <select class="w-full bg-bgMain border border-slate-700 rounded-lg px-3 py-2 text-sm text-textPrimary">
-                            <option>Todas</option>
-                            <option>Carne</option>
-                            <option>Filé Mignon</option>
-                            <option>Pimenta</option>
-                            <option>#sobremesa</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-3 pt-2">
-                    <button onclick="triggerToast('Filtro aplicado ao relatório!')" class="bg-brandPrimary hover:bg-brandSecondary text-white px-4 py-2 rounded-lg text-sm font-medium">Filtrar</button>
-                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2">
-                        <i data-lucide="printer" class="w-4 h-4"></i>
-                        <span>Imprimir (A4)</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Folha para Impressão e PDF -->
-            <div class="bg-white text-slate-900 p-8 rounded-xl shadow-xl print-area space-y-6">
-                <div class="flex justify-between items-center border-b pb-4 border-slate-200">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">Relatório de Estoque</h1>
-                        <p class="text-xs text-slate-500">EstoqueSync Soluções Ltda.</p>
-                    </div>
-                    <div class="text-right text-xs text-slate-500">
-                        <p>Data: 24/07/2026</p>
-                        <p>Emissão: Automática</p>
-                    </div>
-                </div>
-
-                <table class="w-full text-left text-sm border-collapse">
-                    <thead>
-                        <tr class="border-b-2 border-slate-300 text-slate-700">
-                            <th class="py-2">Código</th>
-                            <th class="py-2">Produto</th>
-                            <th class="py-2">Categoria</th>
-                            <th class="py-2 text-right">Qtd</th>
-                            <th class="py-2 text-right">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 text-slate-800">
-                        <tr>
-                            <td class="py-2 font-mono text-xs">PRD-001</td>
-                            <td class="py-2 font-medium">Filé Mignon (Peça)</td>
-                            <td class="py-2">Carne</td>
-                            <td class="py-2 text-right font-semibold">42 un.</td>
-                            <td class="py-2 text-right text-green-600 font-medium">Normal</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 font-mono text-xs">PRD-002</td>
-                            <td class="py-2 font-medium">Petit Gateau</td>
-                            <td class="py-2">#sobremesa</td>
-                            <td class="py-2 text-right font-semibold">3 un.</td>
-                            <td class="py-2 text-right text-yellow-600 font-medium">Estoque Baixo</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="border-t pt-4 border-slate-200 flex justify-between items-center text-xs text-slate-500">
-                    <p>Total de Itens: 2</p>
-                    <p class="font-bold text-slate-800 text-sm">Volume Total: 45 un.</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- RODAPÉ -->
-    <footer class="bg-cardBg border-t border-slate-800 py-6 text-center text-xs text-textSecondary no-print mt-auto">
-        <p>EstoqueSync v1.0 &copy; 2026 | Licença MIT | <a href="#" class="text-brandSecondary hover:underline">GitHub</a></p>
-    </footer>
-
-    <!-- ROTEAMENTO E LÓGICA FRONTEND -->
-    <script>
+        // Re-inicializa ícones Lucide para garantir renderização de elementos visíveis
         lucide.createIcons();
 
-        // Roteador de Telas da SPA
-        function navigate(view) {
-            const views = ['landing', 'login', 'dashboard', 'produtos', 'relatorios'];
-            views.forEach(v => {
-                const element = document.getElementById(`view-${v}`);
-                if (element) element.classList.add('hidden');
-            });
-
-            const targetView = document.getElementById(`view-${view}`);
-            if (targetView) targetView.classList.remove('hidden');
-
-            if (view === 'dashboard') {
-                renderChart();
-            }
+        if (view === 'dashboard') {
+            renderChart();
         }
+    }
 
-        // Login Simulado
-        function handleLogin(e) {
-            e.preventDefault();
-            triggerToast("Login efetuado com sucesso!");
-            navigate('dashboard');
-        }
+    // Login Simulado
+    function handleLogin(e) {
+        e.preventDefault();
+        triggerToast("Login efetuado com sucesso!");
+        navigate('dashboard');
+    }
 
-        // Sistema de Notificações Toast
-        function triggerToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerText = msg;
-            toast.classList.remove('translate-x-full');
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
-            }, 3000);
-        }
+    // Sistema de Notificações Toast
+    function triggerToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-message').innerText = msg;
+        toast.classList.remove('translate-x-full');
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+        }, 3000);
+    }
 
-        // Instância do Gráfico Chart.js
-        let chartInstance = null;
-        function renderChart() {
-            const ctx = document.getElementById('dashboardChart');
-            if (!ctx) return;
+    // Instância do Gráfico Chart.js
+    let chartInstance = null;
+    function renderChart() {
+        const ctx = document.getElementById('dashboardChart');
+        if (!ctx) return;
 
-            if (chartInstance) chartInstance.destroy();
+        if (chartInstance) chartInstance.destroy();
 
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-                    datasets: [
-                        {
-                            label: 'Entradas',
-                            data: [15, 22, 10, 18, 12, 25, 30],
-                            borderColor: '#22c55e',
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Saídas',
-                            data: [8, 14, 12, 6, 15, 10, 18],
-                            borderColor: '#ef4444',
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#F8FAFC' } }
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                datasets: [
+                    {
+                        label: 'Entradas',
+                        data: [15, 22, 10, 18, 12, 25, 30],
+                        borderColor: '#22c55e',
+                        tension: 0.3
                     },
-                    scales: {
-                        x: { ticks: { color: '#94A3B8' }, grid: { color: '#334155' } },
-                        y: { ticks: { color: '#94A3B8' }, grid: { color: '#334155' } }
+                    {
+                        label: 'Saídas',
+                        data: [8, 14, 12, 6, 15, 10, 18],
+                        borderColor: '#ef4444',
+                        tension: 0.3
                     }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#F8FAFC' } }
+                },
+                scales: {
+                    x: { ticks: { color: '#94A3B8' }, grid: { color: '#334155' } },
+                    y: { ticks: { color: '#94A3B8' }, grid: { color: '#334155' } }
                 }
-            });
-        }
-    </script>
-</body>
-</html>
+            }
+        });
+    }
+</script>
