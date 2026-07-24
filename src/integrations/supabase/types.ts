@@ -60,6 +60,7 @@ export type Database = {
           id: string
           nome: string
           quantidade: number
+          ultima_reposicao: string | null
           unidade: string
         }
         Insert: {
@@ -69,6 +70,7 @@ export type Database = {
           id?: string
           nome: string
           quantidade?: number
+          ultima_reposicao?: string | null
           unidade: string
         }
         Update: {
@@ -78,6 +80,7 @@ export type Database = {
           id?: string
           nome?: string
           quantidade?: number
+          ultima_reposicao?: string | null
           unidade?: string
         }
         Relationships: []
@@ -87,6 +90,9 @@ export type Database = {
           datahora: string
           estoque_atual: number
           id: string
+          observacao: string | null
+          periodo_fim: string | null
+          periodo_inicio: string | null
           tipo: string
           total_entrada: number
           total_movimentos: number
@@ -96,6 +102,9 @@ export type Database = {
           datahora?: string
           estoque_atual?: number
           id?: string
+          observacao?: string | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
           tipo: string
           total_entrada?: number
           total_movimentos?: number
@@ -105,6 +114,9 @@ export type Database = {
           datahora?: string
           estoque_atual?: number
           id?: string
+          observacao?: string | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
           tipo?: string
           total_entrada?: number
           total_movimentos?: number
