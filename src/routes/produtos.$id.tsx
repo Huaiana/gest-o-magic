@@ -282,19 +282,32 @@ function EditProductPage() {
             </button>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              Quantidade a {movementType === "entrada" ? "adicionar" : "remover"}
-            </label>
-            <input
-              type="number"
-              required
-              min="1"
-              value={movementQty}
-              onChange={(e) => setMovementQty(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Ex: 5"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quantidade a {movementType === "entrada" ? "adicionar" : "remover"}
+              </label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={movementQty}
+                onChange={(e) => setMovementQty(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: 5"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Data da movimentação
+              </label>
+              <input
+                type="datetime-local"
+                value={movementDate}
+                onChange={(e) => setMovementDate(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
