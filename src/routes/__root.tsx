@@ -149,7 +149,8 @@ function Navbar() {
 
         <nav className="hidden md:flex items-center space-x-1">
           <NavLink to="/dashboard" active={pathname === "/dashboard"}>Dashboard</NavLink>
-          <NavLink to="/produtos" active={pathname === "/produtos"}>Produtos</NavLink>
+          <NavLink to="/produtos" active={pathname.startsWith("/produtos")}>Produtos</NavLink>
+          <NavLink to="/movimentacoes" active={pathname.startsWith("/movimentacoes")}>Movimentações</NavLink>
           <NavLink to="/relatorios" active={pathname === "/relatorios"}>Relatórios</NavLink>
         </nav>
 
