@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FileText, Plus, Printer, Filter } from "lucide-react";
+import { FileText, Plus, Printer, Filter, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getReports, getMovements, getProducts, generateReport } from "@/lib/stock.functions";
+import { getReports, getMovements, getProducts, generateReport, deleteReport } from "@/lib/stock.functions";
 import { buildProductCodes } from "@/lib/product-code";
+
+type ReportTipo = "Diário" | "Semanal" | "Mensal";
+
 
 const reportsQueryOptions = () =>
   queryOptions({ queryKey: ["reports"], queryFn: () => getReports() });
