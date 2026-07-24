@@ -51,8 +51,14 @@ function EditProductPage() {
     categoria: product?.categoria ?? "",
     quantidade: String(product?.quantidade ?? 0),
     unidade: product?.unidade ?? "",
+    data_entrada: product?.data_entrada
+      ? new Date(product.data_entrada).toISOString().slice(0, 16)
+      : "",
   });
   const [movementQty, setMovementQty] = useState("");
+  const [movementDate, setMovementDate] = useState(
+    new Date().toISOString().slice(0, 16),
+  );
   const [movementType, setMovementType] = useState<"entrada" | "saida">(
     search.action ?? "entrada",
   );
