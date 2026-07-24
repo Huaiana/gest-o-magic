@@ -162,6 +162,96 @@ export const addMovement = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const deleteMovement = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const { data: mov, error: fetchErr } = await supabase
+      .from("movements")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+    if (fetchErr || !mov) throw new Error("Movimentação não encontrada");
+
+    const { data: product } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", mov.product_id)
+      .single();
+
+    if (product) {
+      const qtdAtual = product.quantidade ?? 0;
+      const revert =
+        mov.tipo === "entrada"
+          ? qtdAtual - mov.quantidade
+          : qtdAtual + mov.quantidade;
+      const nova = Math.max(0, revert);
+      await supabase
+        .from("products")
+        .update({ quantidade: nova, estoque: nova > 0 })
+        .eq("id", product.id);
+    }
+
+    const { error } = await supabase.from("movements").delete().eq("id", data.id);
+    if (error) throw error;
+    return { success: true };
+  });
+
+export const updateMovement = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        quantidade: z.coerce.number().int().min(1),
+        tipo: z.enum(["entrada", "saida"]),
+        data_movimento: z.string().datetime().optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const { data: old, error: fetchErr } = await supabase
+      .from("movements")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+    if (fetchErr || !old) throw new Error("Movimentação não encontrada");
+
+    const { data: product } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", old.product_id)
+      .single();
+
+    if (product) {
+      const qtdAtual = product.quantidade ?? 0;
+      // revert old
+      const reverted =
+        old.tipo === "entrada"
+          ? qtdAtual - old.quantidade
+          : qtdAtual + old.quantidade;
+      // apply new
+      const applied =
+        data.tipo === "entrada"
+          ? reverted + data.quantidade
+          : reverted - data.quantidade;
+      if (applied < 0) throw new Error("Estoque insuficiente para esta alteração");
+      await supabase
+        .from("products")
+        .update({ quantidade: applied, estoque: applied > 0 })
+        .eq("id", product.id);
+    }
+
+    const payload = {
+      quantidade: data.quantidade,
+      tipo: data.tipo,
+      ...(data.data_movimento ? { data_movimento: data.data_movimento } : {}),
+    };
+    const { error } = await supabase.from("movements").update(payload).eq("id", data.id);
+    if (error) throw error;
+    return { success: true };
+  });
+
 export const getReports = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = createPublicClient();
   const { data, error } = await supabase
