@@ -14,6 +14,7 @@ import {
 import { deleteProduct, getProducts, seedInitialData } from "@/lib/stock.functions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { buildProductCodes } from "@/lib/product-code";
 
 const productsQueryOptions = () =>
   queryOptions({
