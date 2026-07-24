@@ -217,8 +217,10 @@ function ReportsPage() {
               <p className="mt-1">Período: {dateStart || "—"} a {dateEnd || "—"}</p>
             )}
             {category && <p>Categoria: {category}</p>}
+            {productId && <p>Produto: {productMap.get(productId)?.nome}</p>}
           </div>
         </div>
+
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
