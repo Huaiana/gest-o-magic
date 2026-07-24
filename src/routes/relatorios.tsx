@@ -127,15 +127,25 @@ function ReportsPage() {
             Filtre por período e categoria, imprima em A4 ou exporte em PDF.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <select
+            value={reportTipo}
+            onChange={(e) => setReportTipo(e.target.value as ReportTipo)}
+            className="px-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="Diário">Diário</option>
+            <option value="Semanal">Semanal</option>
+            <option value="Mensal">Mensal</option>
+          </select>
           <button
-            onClick={() => generateMutation.mutate()}
+            onClick={() => generateMutation.mutate(reportTipo)}
             disabled={generateMutation.isPending}
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition disabled:opacity-70"
           >
             <Plus className="w-4 h-4" />
-            {generateMutation.isPending ? "Gerando..." : "Gerar relatório"}
+            {generateMutation.isPending ? "Salvando..." : "Salvar relatório"}
           </button>
+
           <button
             onClick={() => window.print()}
             className="inline-flex items-center gap-2 border border-border text-foreground hover:bg-secondary px-4 py-2 rounded-lg font-medium transition"
