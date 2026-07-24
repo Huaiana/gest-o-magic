@@ -11,9 +11,9 @@ from datetime import datetime
 class Adicionar_Produto:
     id: int
     nome: str
-    categoria: str #sobremesa, carne, pimenta, filé de mignom, etc
+    categoria: str #sobremesa, contra, pimenta, filé de mignom, etc
     quantidade: int
-    unidade: str #kg, litro, unidade, etc
+    unidade: str #peças, litro, unidade, etc
     data_entrada: datetime
 
 
@@ -21,9 +21,9 @@ class Adicionar_Produto:
 class Produto:
     id: int
     nome: str
-    categoria: str #sobremesa, carne, pimenta, filé de mignom, etc
+    categoria: str #sobremesa, contra, pimenta, filé de mignom, etc
     quantidade: int
-    unidade: str #kg, litro, unidade, etc
+    unidade: str #peças, litro, unidade, etc
     estoque: bool
     data_entrada: datetime
 
@@ -32,9 +32,9 @@ class Produto:
 class Estoque:
     id: int
     nome: str
-    categoria: str #sobremesa, carne, pimenta, filé de mignom, etc
+    categoria: str #sobremesa, contra, pimenta, filé de mignom, etc
     quantidade: int
-    unidade: str #kg, litro, unidade, etc
+    unidade: str #peças, litro, unidade, etc
     data_entrada: datetime
     data_saida: datetime
 
@@ -43,10 +43,10 @@ class Estoque:
 class MovimentoEstoque:
     id: int
     produto_id: int
-    categoria: str  #sobremesa, carne, pimenta, filé de mignom, etc
+    categoria: str  #sobremesa, contra, pimenta, filé de mignom, etc
     tipo_movimento: str  # 'entrada' ou 'saida'
     quantidade: int
-    unidade: str  # kg, litro, unidade, etc
+    unidade: str  # peças, litro, unidade, etc
     data_movimento: datetime
 
 
@@ -56,9 +56,9 @@ class Relatorio:
     tipo: str  # 'Diário', 'Semanal', 'Mensal'
     datahora: datetime
     nome: str #produto 
-    categoria: str  #sobremesa, carne, pimenta, filé de mignom, etc
+    categoria: str  #sobremesa, contra, pimenta, filé de mignom, etc
     quantidade_estoque: int
-    unidade: str  # kg, litro, unidade, etc
+    unidade: str  # peças, litro, unidade, etc
     produtos: list[Produto]
     total_movimentos: int
     total_entrada: int
