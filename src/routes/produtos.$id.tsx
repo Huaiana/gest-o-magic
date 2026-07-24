@@ -35,7 +35,7 @@ export const Route = createFileRoute("/produtos/$id")({
 
 function EditProductPage() {
   const { id } = Route.useParams();
-  const search = Route.useSearch<{ action?: "entrada" | "saida" }>();
+  const search = Route.useSearch();
   const { data: products } = useSuspenseQuery(productsQueryOptions());
   const product = products.find((p) => p.id === id);
   const navigate = useNavigate();
