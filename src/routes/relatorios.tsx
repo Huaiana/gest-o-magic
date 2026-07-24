@@ -136,7 +136,7 @@ function ReportsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-card border border-border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-4 gap-3 no-print">
+      <div className="bg-card border border-border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-5 gap-3 no-print">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">Data Inicial</label>
           <input
@@ -161,7 +161,7 @@ function ReportsPage() {
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => { setCategory(e.target.value); setProductId(""); }}
               className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
             >
               <option value="">Todas</option>
@@ -171,15 +171,29 @@ function ReportsPage() {
             </select>
           </div>
         </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Produto</label>
+          <select
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
+          >
+            <option value="">Todos</option>
+            {productsForSelect.map((p) => (
+              <option key={p.id} value={p.id}>{p.nome}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex items-end">
           <button
-            onClick={() => { setDateStart(""); setDateEnd(""); setCategory(""); }}
+            onClick={() => { setDateStart(""); setDateEnd(""); setCategory(""); setProductId(""); }}
             className="w-full px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition"
           >
             Limpar filtros
           </button>
         </div>
       </div>
+
 
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
