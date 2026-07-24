@@ -38,11 +38,13 @@ function ReportsPage() {
   const { data: products } = useSuspenseQuery(productsQueryOptions());
   const queryClient = useQueryClient();
   const generateFn = useServerFn(generateReport);
+  const deleteReportFn = useServerFn(deleteReport);
 
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
   const [productId, setProductId] = useState("");
+  const [reportTipo, setReportTipo] = useState<ReportTipo>("Diário");
 
   const codes = useMemo(() => buildProductCodes(products), [products]);
   const categories = useMemo(
@@ -58,12 +60,18 @@ function ReportsPage() {
   );
 
   const generateMutation = useMutation({
-    mutationFn: () => generateFn(),
+    mutationFn: (tipo: ReportTipo) => generateFn({ data: { tipo } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
   });
+
+  const deleteReportMutation = useMutation({
+    mutationFn: (id: string) => deleteReportFn({ data: { id } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reports"] }),
+  });
+
 
   const filteredMovements = useMemo(() => {
     const startTs = dateStart ? new Date(dateStart + "T00:00:00").getTime() : -Infinity;
