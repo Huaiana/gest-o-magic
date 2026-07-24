@@ -395,37 +395,65 @@ function ReportsPage() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Data/Hora</th>
+                <th className="text-left px-4 py-3 font-medium">Período</th>
                 <th className="text-right px-4 py-3 font-medium">Movs.</th>
                 <th className="text-right px-4 py-3 font-medium">Entradas</th>
                 <th className="text-right px-4 py-3 font-medium">Saídas</th>
                 <th className="text-right px-4 py-3 font-medium">Estoque</th>
+                <th className="text-right px-4 py-3 font-medium">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {reports.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     Nenhum relatório gerado ainda.
                   </td>
                 </tr>
               ) : (
-                reports.map((r) => (
-                  <tr key={r.id} className="hover:bg-secondary/20 transition">
-                    <td className="px-4 py-3 text-foreground">{r.tipo}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {new Date(r.datahora).toLocaleString("pt-BR")}
-                    </td>
-                    <td className="px-4 py-3 text-right text-foreground">{r.total_movimentos}</td>
-                    <td className="px-4 py-3 text-right text-status-success">{r.total_entrada}</td>
-                    <td className="px-4 py-3 text-right text-status-danger">{r.total_saida}</td>
-                    <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
-                  </tr>
-                ))
+                reports.map((r) => {
+                  const rr = r as typeof r & { periodo_inicio?: string | null; periodo_fim?: string | null };
+                  const ini = rr.periodo_inicio ? new Date(rr.periodo_inicio).toLocaleDateString("pt-BR") : null;
+                  const fim = rr.periodo_fim ? new Date(rr.periodo_fim).toLocaleDateString("pt-BR") : null;
+                  return (
+                    <tr key={r.id} className="hover:bg-secondary/20 transition">
+                      <td className="px-4 py-3 text-foreground">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium">
+                          {r.tipo}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {new Date(r.datahora).toLocaleString("pt-BR")}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">
+                        {ini && fim ? `${ini} → ${fim}` : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right text-foreground">{r.total_movimentos}</td>
+                      <td className="px-4 py-3 text-right text-status-success">{r.total_entrada}</td>
+                      <td className="px-4 py-3 text-right text-status-danger">{r.total_saida}</td>
+                      <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => {
+                            if (confirm("Excluir este relatório do histórico?")) {
+                              deleteReportMutation.mutate(r.id);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 text-status-danger hover:text-red-400 transition"
+                          aria-label="Excluir relatório"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
+
     </div>
   );
 }
