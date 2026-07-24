@@ -261,6 +261,91 @@ function ReportsPage() {
           </table>
         </div>
 
+        {/* Per-product entradas/saídas breakdown */}
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-foreground mb-3">Entradas e saídas por produto</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-secondary/40 text-muted-foreground">
+                <tr>
+                  <th className="text-left px-3 py-2 font-medium">Código</th>
+                  <th className="text-left px-3 py-2 font-medium">Produto</th>
+                  <th className="text-right px-3 py-2 font-medium">Entradas</th>
+                  <th className="text-right px-3 py-2 font-medium">Saídas</th>
+                  <th className="text-right px-3 py-2 font-medium">Estoque atual</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {perProduct.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                      Sem dados no filtro selecionado.
+                    </td>
+                  </tr>
+                ) : (
+                  perProduct.map(({ product, entradas, saidas }) => (
+                    <tr key={product.id}>
+                      <td className="px-3 py-2 font-mono text-xs">{codes.get(product.id)}</td>
+                      <td className="px-3 py-2 text-foreground">{product.nome}</td>
+                      <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
+                      <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
+                      <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Movement detail — only when a single product is selected */}
+        {productId && (
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-foreground mb-3">
+              Movimentações de {productMap.get(productId)?.nome}
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-secondary/40 text-muted-foreground">
+                  <tr>
+                    <th className="text-left px-3 py-2 font-medium">Data</th>
+                    <th className="text-left px-3 py-2 font-medium">Tipo</th>
+                    <th className="text-right px-3 py-2 font-medium">Quantidade</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredMovements.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-3 py-6 text-center text-muted-foreground">
+                        Nenhuma movimentação no período.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredMovements
+                      .slice()
+                      .sort((a, b) => new Date(b.data_movimento).getTime() - new Date(a.data_movimento).getTime())
+                      .map((m) => (
+                        <tr key={m.id}>
+                          <td className="px-3 py-2 text-muted-foreground">
+                            {new Date(m.data_movimento).toLocaleString("pt-BR")}
+                          </td>
+                          <td className={`px-3 py-2 font-medium ${m.tipo === "entrada" ? "text-status-success" : "text-status-danger"}`}>
+                            {m.tipo === "entrada" ? "Entrada" : "Saída"}
+                          </td>
+                          <td className="px-3 py-2 text-right text-foreground">
+                            {m.tipo === "entrada" ? "+" : "-"}{m.quantidade} {m.unidade}
+                          </td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+
+
         <div className="mt-6 flex flex-wrap gap-6 text-sm border-t border-border pt-4">
           <div><span className="text-muted-foreground">Total de Itens:</span> <strong className="text-foreground">{totalItens}</strong></div>
           <div><span className="text-muted-foreground">Volume Total:</span> <strong className="text-foreground">{volumeTotal} un.</strong></div>
