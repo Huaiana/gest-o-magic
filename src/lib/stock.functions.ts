@@ -7,12 +7,14 @@ const productSchema = z.object({
   categoria: z.string().min(1),
   quantidade: z.coerce.number().int().min(0),
   unidade: z.string().min(1),
+  data_entrada: z.string().datetime().optional(),
 });
 
 const movementSchema = z.object({
   product_id: z.string().uuid(),
   tipo: z.enum(["entrada", "saida"]),
   quantidade: z.coerce.number().int().min(1),
+  data_movimento: z.string().datetime().optional(),
 });
 
 export const getProducts = createServerFn({ method: "GET" }).handler(async () => {
