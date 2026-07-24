@@ -14,7 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      movements: {
+        Row: {
+          categoria: string
+          data_movimento: string
+          id: string
+          product_id: string
+          quantidade: number
+          tipo: string
+          unidade: string
+        }
+        Insert: {
+          categoria: string
+          data_movimento?: string
+          id?: string
+          product_id: string
+          quantidade: number
+          tipo: string
+          unidade: string
+        }
+        Update: {
+          categoria?: string
+          data_movimento?: string
+          id?: string
+          product_id?: string
+          quantidade?: number
+          tipo?: string
+          unidade?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          categoria: string
+          data_entrada: string
+          estoque: boolean
+          id: string
+          nome: string
+          quantidade: number
+          unidade: string
+        }
+        Insert: {
+          categoria: string
+          data_entrada?: string
+          estoque?: boolean
+          id?: string
+          nome: string
+          quantidade?: number
+          unidade: string
+        }
+        Update: {
+          categoria?: string
+          data_entrada?: string
+          estoque?: boolean
+          id?: string
+          nome?: string
+          quantidade?: number
+          unidade?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          datahora: string
+          estoque_atual: number
+          id: string
+          tipo: string
+          total_entrada: number
+          total_movimentos: number
+          total_saida: number
+        }
+        Insert: {
+          datahora?: string
+          estoque_atual?: number
+          id?: string
+          tipo: string
+          total_entrada?: number
+          total_movimentos?: number
+          total_saida?: number
+        }
+        Update: {
+          datahora?: string
+          estoque_atual?: number
+          id?: string
+          tipo?: string
+          total_entrada?: number
+          total_movimentos?: number
+          total_saida?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
