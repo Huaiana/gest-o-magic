@@ -106,6 +106,9 @@ function EditProductPage() {
         categoria: form.categoria,
         quantidade: Number(form.quantidade),
         unidade: form.unidade,
+        data_entrada: form.data_entrada
+          ? new Date(form.data_entrada).toISOString()
+          : undefined,
       },
     });
   };
@@ -118,6 +121,9 @@ function EditProductPage() {
         product_id: id,
         tipo: movementType,
         quantidade: Number(movementQty),
+        data_movimento: movementDate
+          ? new Date(movementDate).toISOString()
+          : undefined,
       },
     });
   };
