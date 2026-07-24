@@ -1,34 +1,24 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { FileText, Plus, Printer, Download, ArrowLeft, Calendar } from "lucide-react";
+import { useMemo, useState } from "react";
+import { FileText, Plus, Printer, Filter } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getReports, getMovements, getProducts, generateReport } from "@/lib/stock.functions";
+import { buildProductCodes } from "@/lib/product-code";
 
 const reportsQueryOptions = () =>
-  queryOptions({
-    queryKey: ["reports"],
-    queryFn: () => getReports(),
-  });
-
+  queryOptions({ queryKey: ["reports"], queryFn: () => getReports() });
 const movementsQueryOptions = () =>
-  queryOptions({
-    queryKey: ["movements"],
-    queryFn: () => getMovements(),
-  });
-
+  queryOptions({ queryKey: ["movements"], queryFn: () => getMovements() });
 const productsQueryOptions = () =>
-  queryOptions({
-    queryKey: ["products"],
-    queryFn: () => getProducts(),
-  });
+  queryOptions({ queryKey: ["products"], queryFn: () => getProducts() });
 
 export const Route = createFileRoute("/relatorios")({
   head: () => ({
     meta: [
       { title: "Relatórios - EstoqueSync" },
-      { name: "description", content: "Relatórios de movimentação e estoque." },
+      { name: "description", content: "Relatórios de movimentação e estoque, com filtros por data, categoria e impressão em A4." },
     ],
   }),
   loader: async ({ context }) => {
@@ -45,7 +35,16 @@ function ReportsPage() {
   const { data: products } = useSuspenseQuery(productsQueryOptions());
   const queryClient = useQueryClient();
   const generateFn = useServerFn(generateReport);
-  const [selectedReport, setSelectedReport] = useState<string | null>(null);
+
+  const [dateStart, setDateStart] = useState("");
+  const [dateEnd, setDateEnd] = useState("");
+  const [category, setCategory] = useState("");
+
+  const codes = useMemo(() => buildProductCodes(products), [products]);
+  const categories = useMemo(
+    () => Array.from(new Set(products.map((p) => p.categoria))).sort(),
+    [products],
+  );
 
   const generateMutation = useMutation({
     mutationFn: () => generateFn(),
@@ -55,74 +54,129 @@ function ReportsPage() {
     },
   });
 
-  const totalEntrada = movements
-    .filter((m) => m.tipo === "entrada")
-    .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
-  const totalSaida = movements
-    .filter((m) => m.tipo === "saida")
-    .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
-  const activeStock = products.filter((p) => (p.estoque ?? false)).length;
+  const filteredMovements = useMemo(() => {
+    const startTs = dateStart ? new Date(dateStart + "T00:00:00").getTime() : -Infinity;
+    const endTs = dateEnd ? new Date(dateEnd + "T23:59:59").getTime() : Infinity;
+    return movements.filter((m) => {
+      const t = new Date(m.data_movimento).getTime();
+      if (t < startTs || t > endTs) return false;
+      if (category && m.categoria !== category) return false;
+      return true;
+    });
+  }, [movements, dateStart, dateEnd, category]);
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const filteredProducts = useMemo(
+    () => (category ? products.filter((p) => p.categoria === category) : products),
+    [products, category],
+  );
+
+  const totalEntrada = filteredMovements
+    .filter((m) => m.tipo === "entrada")
+    .reduce((s, m) => s + (m.quantidade ?? 0), 0);
+  const totalSaida = filteredMovements
+    .filter((m) => m.tipo === "saida")
+    .reduce((s, m) => s + (m.quantidade ?? 0), 0);
+  const totalItens = filteredProducts.length;
+  const volumeTotal = filteredProducts.reduce((s, p) => s + (p.quantidade ?? 0), 0);
+
+  const today = new Date().toLocaleDateString("pt-BR");
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Relatórios</h1>
+          <h1 className="text-3xl font-bold text-foreground">Módulo de Relatórios</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Acompanhe a movimentação e gere relatórios do estoque
+            Filtre por período e categoria, imprima em A4 ou exporte em PDF.
           </p>
         </div>
-        <button
-          onClick={() => generateMutation.mutate()}
-          disabled={generateMutation.isPending}
-          className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition disabled:opacity-70"
-        >
-          <Plus className="w-4 h-4" />
-          {generateMutation.isPending ? "Gerando..." : "Gerar relatório"}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="text-sm text-muted-foreground">Total de entradas</div>
-          <div className="text-2xl font-bold text-foreground mt-1">{totalEntrada}</div>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="text-sm text-muted-foreground">Total de saídas</div>
-          <div className="text-2xl font-bold text-foreground mt-1">{totalSaida}</div>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="text-sm text-muted-foreground">Produtos em estoque</div>
-          <div className="text-2xl font-bold text-foreground mt-1">{activeStock}</div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => generateMutation.mutate()}
+            disabled={generateMutation.isPending}
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition disabled:opacity-70"
+          >
+            <Plus className="w-4 h-4" />
+            {generateMutation.isPending ? "Gerando..." : "Gerar relatório"}
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 border border-border text-foreground hover:bg-secondary px-4 py-2 rounded-lg font-medium transition"
+          >
+            <Printer className="w-4 h-4" />
+            Imprimir (A4)
+          </button>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden print-area">
-        <div className="p-6 border-b border-border flex items-center justify-between no-print">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Relatórios gerados</h2>
+      {/* Filters */}
+      <div className="bg-card border border-border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-4 gap-3 no-print">
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Data Inicial</label>
+          <input
+            type="date"
+            value={dateStart}
+            onChange={(e) => setDateStart(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Data Final</label>
+          <input
+            type="date"
+            value={dateEnd}
+            onChange={(e) => setDateEnd(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Categoria</label>
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
+            >
+              <option value="">Todas</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-secondary transition"
-            >
-              <Printer className="w-4 h-4" />
-              Imprimir
-            </button>
-            <button
-              onClick={() => generateMutation.mutate()}
-              disabled={generateMutation.isPending}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-secondary transition disabled:opacity-50"
-            >
-              <Download className="w-4 h-4" />
-              Exportar
-            </button>
+        </div>
+        <div className="flex items-end">
+          <button
+            onClick={() => { setDateStart(""); setDateEnd(""); setCategory(""); }}
+            className="w-full px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
+        <SummaryCard label="Total de entradas" value={totalEntrada} />
+        <SummaryCard label="Total de saídas" value={totalSaida} />
+        <SummaryCard label="Total de itens" value={totalItens} />
+        <SummaryCard label="Volume total" value={volumeTotal} />
+      </div>
+
+      {/* Printable A4 area */}
+      <div className="print-area bg-card border border-border rounded-xl p-8">
+        <div className="flex items-start justify-between border-b border-border pb-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Relatório de Estoque</h2>
+            <p className="text-sm text-muted-foreground mt-1">EstoqueSync Soluções Ltda.</p>
+          </div>
+          <div className="text-right text-sm text-muted-foreground">
+            <p>Data: {today}</p>
+            <p>Emissão: Automática</p>
+            {(dateStart || dateEnd) && (
+              <p className="mt-1">Período: {dateStart || "—"} a {dateEnd || "—"}</p>
+            )}
+            {category && <p>Categoria: {category}</p>}
           </div>
         </div>
 
@@ -130,10 +184,62 @@ function ReportsPage() {
           <table className="w-full text-sm">
             <thead className="bg-secondary/40 text-muted-foreground">
               <tr>
-                <th className="text-left px-4 py-3 font-medium">ID</th>
+                <th className="text-left px-3 py-2 font-medium">Código</th>
+                <th className="text-left px-3 py-2 font-medium">Produto</th>
+                <th className="text-left px-3 py-2 font-medium">Categoria</th>
+                <th className="text-right px-3 py-2 font-medium">Qtd</th>
+                <th className="text-left px-3 py-2 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filteredProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                    Nenhum produto no filtro selecionado.
+                  </td>
+                </tr>
+              ) : (
+                filteredProducts.map((p) => {
+                  const status =
+                    (p.quantidade ?? 0) > 5 ? "Normal" : (p.quantidade ?? 0) > 0 ? "Baixo" : "Esgotado";
+                  return (
+                    <tr key={p.id}>
+                      <td className="px-3 py-2 font-mono text-xs">{codes.get(p.id)}</td>
+                      <td className="px-3 py-2 text-foreground">{p.nome}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{p.categoria}</td>
+                      <td className="px-3 py-2 text-right text-foreground">
+                        {p.quantidade} {p.unidade}
+                      </td>
+                      <td className="px-3 py-2">{status}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-6 text-sm border-t border-border pt-4">
+          <div><span className="text-muted-foreground">Total de Itens:</span> <strong className="text-foreground">{totalItens}</strong></div>
+          <div><span className="text-muted-foreground">Volume Total:</span> <strong className="text-foreground">{volumeTotal} un.</strong></div>
+          <div><span className="text-muted-foreground">Entradas:</span> <strong className="text-foreground">{totalEntrada}</strong></div>
+          <div><span className="text-muted-foreground">Saídas:</span> <strong className="text-foreground">{totalSaida}</strong></div>
+        </div>
+      </div>
+
+      {/* History */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden no-print">
+        <div className="p-4 border-b border-border flex items-center gap-2">
+          <FileText className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Histórico de relatórios</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary/40 text-muted-foreground">
+              <tr>
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Data/Hora</th>
-                <th className="text-right px-4 py-3 font-medium">Movimentações</th>
+                <th className="text-right px-4 py-3 font-medium">Movs.</th>
                 <th className="text-right px-4 py-3 font-medium">Entradas</th>
                 <th className="text-right px-4 py-3 font-medium">Saídas</th>
                 <th className="text-right px-4 py-3 font-medium">Estoque</th>
@@ -142,19 +248,14 @@ function ReportsPage() {
             <tbody className="divide-y divide-border">
               {reports.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    Nenhum relatório gerado. Clique em "Gerar relatório" para começar.
+                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    Nenhum relatório gerado ainda.
                   </td>
                 </tr>
               ) : (
                 reports.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="hover:bg-secondary/20 transition cursor-pointer"
-                    onClick={() => setSelectedReport(r.id)}
-                  >
-                    <td className="px-4 py-3 text-foreground font-medium">#{String(r.id).slice(0, 8)}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.tipo}</td>
+                  <tr key={r.id} className="hover:bg-secondary/20 transition">
+                    <td className="px-4 py-3 text-foreground">{r.tipo}</td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {new Date(r.datahora).toLocaleString("pt-BR")}
                     </td>
@@ -169,44 +270,15 @@ function ReportsPage() {
           </table>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {selectedReport && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 no-print">
-          <div className="bg-card border border-border rounded-xl p-6 max-w-lg w-full shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Detalhes do relatório</h3>
-              <button
-                onClick={() => setSelectedReport(null)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-2 text-sm">
-              <p>
-                <span className="text-muted-foreground">ID:</span>{" "}
-                <span className="text-foreground">#{String(selectedReport).slice(0, 8)}</span>
-              </p>
-              <p>
-                <span className="text-muted-foreground">Gerado em:</span>{" "}
-                <span className="text-foreground">
-                  {new Date(
-                    reports.find((r) => r.id === selectedReport)?.datahora ?? "",
-                  ).toLocaleString("pt-BR")}
-                </span>
-              </p>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setSelectedReport(null)}
-                className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition"
-              >
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+function SummaryCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="bg-card border border-border rounded-xl p-4">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-2xl font-bold text-foreground mt-1">{value}</div>
     </div>
   );
 }

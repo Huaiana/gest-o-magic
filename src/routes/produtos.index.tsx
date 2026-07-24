@@ -14,6 +14,7 @@ import {
 import { deleteProduct, getProducts, seedInitialData } from "@/lib/stock.functions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { buildProductCodes } from "@/lib/product-code";
 
 const productsQueryOptions = () =>
   queryOptions({
@@ -54,6 +55,7 @@ function ProductsPage() {
   });
 
   const categories = Array.from(new Set(products.map((p) => p.categoria))).sort();
+  const codes = buildProductCodes(products);
 
   const filtered = products.filter((p) => {
     const matchesSearch = p.nome.toLowerCase().includes(search.toLowerCase());
@@ -124,6 +126,7 @@ function ProductsPage() {
           <table className="w-full text-sm">
             <thead className="bg-secondary/40 text-muted-foreground">
               <tr>
+                <th className="text-left px-4 py-3 font-medium">Código</th>
                 <th className="text-left px-4 py-3 font-medium">Nome</th>
                 <th className="text-left px-4 py-3 font-medium">Categoria</th>
                 <th className="text-left px-4 py-3 font-medium">Quantidade</th>
@@ -135,13 +138,14 @@ function ProductsPage() {
             <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                     Nenhum produto encontrado.
                   </td>
                 </tr>
               ) : (
                 filtered.map((p) => (
                   <tr key={p.id} className="hover:bg-secondary/20 transition">
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{codes.get(p.id)}</td>
                     <td className="px-4 py-3 font-medium text-foreground">{p.nome}</td>
                     <td className="px-4 py-3 text-muted-foreground">{p.categoria}</td>
                     <td className="px-4 py-3 text-foreground">{p.quantidade}</td>

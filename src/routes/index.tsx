@@ -25,12 +25,11 @@ function LandingPage() {
         </div>
 
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground tracking-tight mb-6">
-          Controle seu estoque com <span className="text-primary">EstoqueSync</span>
+          Gestão de Estoque <span className="text-primary">Inteligente</span>
         </h1>
         <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed">
-          Gerencie produtos, monitore entradas e saídas, visualize relatórios e
-          nunca mais fique sem itens críticos. Tudo em uma plataforma moderna e
-          fácil de usar.
+          Controle produtos, acompanhe movimentações e gere relatórios em uma
+          plataforma simples, rápida e eficiente.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
@@ -40,17 +39,17 @@ function LandingPage() {
             Acessar Sistema
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <Link
-            to="/dashboard"
+          <a
+            href="#recursos"
             className="inline-flex items-center gap-2 border border-border hover:bg-secondary text-foreground px-6 py-3 rounded-lg font-semibold transition"
           >
-            Ver Dashboard
-          </Link>
+            Ver Recursos
+          </a>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section id="recursos" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 scroll-mt-24">
         <FeatureCard
           icon={<BarChart3 className="w-7 h-7 text-primary" />}
           title="Dashboard Intuitivo"
