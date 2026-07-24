@@ -1,0 +1,310 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { createPublicClient } from "./stock.server";
+
+const productSchema = z.object({
+  nome: z.string().min(1),
+  categoria: z.string().min(1),
+  quantidade: z.coerce.number().int().min(0),
+  unidade: z.string().min(1),
+});
+
+const movementSchema = z.object({
+  product_id: z.string().uuid(),
+  tipo: z.enum(["entrada", "saida"]),
+  quantidade: z.coerce.number().int().min(1),
+});
+
+export const getProducts = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("data_entrada", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+});
+
+export const addProduct = createServerFn({ method: "POST" })
+  .inputValidator((input) => productSchema.parse(input))
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const now = new Date().toISOString();
+    const estoque = data.quantidade > 0;
+
+    const { data: product, error } = await supabase
+      .from("products")
+      .insert({
+        nome: data.nome,
+        categoria: data.categoria,
+        quantidade: data.quantidade,
+        unidade: data.unidade,
+        estoque,
+        data_entrada: now,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    if (data.quantidade > 0) {
+      const { error: movError } = await supabase.from("movements").insert({
+        product_id: product.id,
+        categoria: data.categoria,
+        tipo: "entrada",
+        quantidade: data.quantidade,
+        unidade: data.unidade,
+        data_movimento: now,
+      });
+      if (movError) throw movError;
+    }
+
+    return product;
+  });
+
+export const updateProduct = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        id: z.string().uuid(),
+      })
+      .merge(productSchema)
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const estoque = data.quantidade > 0;
+
+    const { data: product, error } = await supabase
+      .from("products")
+      .update({
+        nome: data.nome,
+        categoria: data.categoria,
+        quantidade: data.quantidade,
+        unidade: data.unidade,
+        estoque,
+      })
+      .eq("id", data.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return product;
+  });
+
+export const deleteProduct = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const { error } = await supabase.from("products").delete().eq("id", data.id);
+    if (error) throw error;
+    return { success: true };
+  });
+
+export const getMovements = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("movements")
+    .select("*, products(nome)")
+    .order("data_movimento", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+});
+
+export const addMovement = createServerFn({ method: "POST" })
+  .inputValidator((input) => movementSchema.parse(input))
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const now = new Date().toISOString();
+
+    const { data: product, error: prodError } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", data.product_id)
+      .single();
+
+    if (prodError || !product) throw new Error("Produto não encontrado");
+
+    const qtdAtual = product.quantidade ?? 0;
+    if (data.tipo === "saida" && qtdAtual < data.quantidade) {
+      throw new Error("Estoque insuficiente");
+    }
+
+    const novaQtd =
+      data.tipo === "entrada"
+        ? qtdAtual + data.quantidade
+        : qtdAtual - data.quantidade;
+    const novoEstoque = novaQtd > 0;
+
+    const { error: updateError } = await supabase
+      .from("products")
+      .update({ quantidade: novaQtd, estoque: novoEstoque })
+      .eq("id", data.product_id);
+
+    if (updateError) throw updateError;
+
+    const { error: movError } = await supabase.from("movements").insert({
+      product_id: data.product_id,
+      categoria: product.categoria,
+      tipo: data.tipo,
+      quantidade: data.quantidade,
+      unidade: product.unidade,
+      data_movimento: now,
+    });
+
+    if (movError) throw movError;
+
+    return { success: true };
+  });
+
+export const getReports = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("reports")
+    .select("*")
+    .order("datahora", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+});
+
+export const generateReport = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const supabase = createPublicClient();
+    const now = new Date().toISOString();
+
+    const { data: movements, error: movError } = await supabase
+      .from("movements")
+      .select("*");
+    if (movError) throw movError;
+
+    const { data: products, error: prodError } = await supabase
+      .from("products")
+      .select("*");
+    if (prodError) throw prodError;
+
+    const totalMov = movements?.length ?? 0;
+    const totalEntrada = movements
+      ?.filter((m) => m.tipo === "entrada")
+      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0) ?? 0;
+    const totalSaida = movements
+      ?.filter((m) => m.tipo === "saida")
+      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0) ?? 0;
+    const estoqueAtual = products?.filter((p) => (p.estoque ?? false)).length ?? 0;
+
+    const { data: report, error } = await supabase
+      .from("reports")
+      .insert({
+        tipo: "Diário",
+        datahora: now,
+        total_movimentos: totalMov,
+        total_entrada: totalEntrada,
+        total_saida: totalSaida,
+        estoque_atual: estoqueAtual,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return report;
+  },
+);
+
+export const getDashboardStats = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const supabase = createPublicClient();
+
+    const { data: products, error: prodError } = await supabase
+      .from("products")
+      .select("*");
+    if (prodError) throw prodError;
+
+    const { data: movements, error: movError } = await supabase
+      .from("movements")
+      .select("*");
+    if (movError) throw movError;
+
+    const totalProducts = products?.length ?? 0;
+    const totalEntrada = movements
+      ?.filter((m) => m.tipo === "entrada")
+      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0) ?? 0;
+    const totalSaida = movements
+      ?.filter((m) => m.tipo === "saida")
+      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0) ?? 0;
+    const lowStock = products?.filter((p) => (p.quantidade ?? 0) <= 5).length ?? 0;
+
+    return {
+      totalProducts,
+      totalEntrada,
+      totalSaida,
+      lowStock,
+    };
+  },
+);
+
+export const seedInitialData = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const supabase = createPublicClient();
+
+    const { count, error: countError } = await supabase
+      .from("products")
+      .select("*", { count: "exact", head: true });
+    if (countError) throw countError;
+    if (count && count > 0) return { seeded: false };
+
+    const now = new Date().toISOString();
+    const seedProducts = [
+      {
+        nome: "Filé Mignon (Peça)",
+        categoria: "Carne",
+        quantidade: 42,
+        unidade: "un",
+        estoque: true,
+        data_entrada: now,
+      },
+      {
+        nome: "Petit Gateau",
+        categoria: "Sobremesa",
+        quantidade: 3,
+        unidade: "un",
+        estoque: true,
+        data_entrada: now,
+      },
+      {
+        nome: "Pimenta",
+        categoria: "Tempero",
+        quantidade: 5,
+        unidade: "un",
+        estoque: true,
+        data_entrada: now,
+      },
+    ];
+
+    const { data: inserted, error } = await supabase
+      .from("products")
+      .insert(seedProducts)
+      .select();
+    if (error) throw error;
+
+    const movements = inserted?.flatMap((p) =>
+      p.quantidade > 0
+        ? [
+            {
+              product_id: p.id,
+              categoria: p.categoria,
+              tipo: "entrada" as const,
+              quantidade: p.quantidade,
+              unidade: p.unidade,
+              data_movimento: now,
+            },
+          ]
+        : [],
+    );
+
+    if (movements && movements.length > 0) {
+      const { error: movError } = await supabase.from("movements").insert(movements);
+      if (movError) throw movError;
+    }
+
+    return { seeded: true };
+  },
+);
