@@ -143,12 +143,19 @@ export const addMovement = createServerFn({ method: "POST" })
         : qtdAtual - data.quantidade;
     const novoEstoque = novaQtd > 0;
 
+    const productUpdate: Record<string, unknown> = {
+      quantidade: novaQtd,
+      estoque: novoEstoque,
+    };
+    if (data.tipo === "entrada") productUpdate.ultima_reposicao = when;
+
     const { error: updateError } = await supabase
       .from("products")
-      .update({ quantidade: novaQtd, estoque: novoEstoque })
+      .update(productUpdate)
       .eq("id", data.product_id);
 
     if (updateError) throw updateError;
+
 
     const { error: movError } = await supabase.from("movements").insert({
       product_id: data.product_id,
