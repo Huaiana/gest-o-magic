@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { AdicionarProdutoRepository } from "../repository/AdicioanarProdutoRepository";
 
 export class AdicionarProdutoController {
+    handle(arg0: string, handle: any) {
+        throw new Error("Method not implemented.");
+    }
     private adicionarProdutoRepository: AdicionarProdutoRepository;
 
     constructor() {

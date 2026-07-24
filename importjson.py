@@ -200,17 +200,17 @@ def menu():
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
-            adicionar_produto()
+            adicionar_produto() # type: ignore
         elif opcao == "2":
-            visualizar_produtos()
+            produtos() # type: ignore
         elif opcao == "3":
-            atualizar_produto()
+            atualizar_produto() # type: ignore
         elif opcao == "4":
-            remover_produto()
+            remover_produto() # type: ignore
         elif opcao == "5":
-            relatorio_produtos()
+            relatorio_produtos() # type: ignore
         elif opcao == "6":
-            estoque()
+            Estoque()
         elif opcao == "7":
             salvar_e_sair()
         else:
@@ -220,3 +220,6 @@ def menu():
 if __name__ == "__main__":
     main()
     menu()
+    
+# Roda o servidor web na porta 3000
+    app.run(host='0.0.0.0', port=3000, debug=True) # type: ignore

@@ -7,7 +7,11 @@ import { RelatorioController } from "./controllers/relatoriocontroller";
 import { AdicionarProdutoController } from "./controllers/adicionarprodutocontroller";
 
 const app = express();
+
 app.use(express.json());
+
+// Servir os arquivos do front-end (index.html, CSS, scripts JS) da pasta 'public'
+app.use(express.static("public"));
 
 // Instâncias dos controllers
 const produtoController = new ProdutoController();
@@ -16,25 +20,18 @@ const movimentoEstoqueController = new MovimentoEstoqueController();
 const relatorioController = new RelatorioController();
 const adicionarProdutoController = new AdicionarProdutoController();
 
-// --- DEFINIÇÃO DAS ROTAS ---
-
-// Produtos (ex: listagem e busca por nome)
+// --- DEFINIÇÃO DAS ROTAS DA API ---
 app.get("/produtos", produtoController.listarOuBuscar);
-
-// Adicionar produto (geralmente uma rota POST)
 app.post("/produtos", adicionarProdutoController.handle);
 
-// Estoque
 app.get("/estoque", estoqueController.listar);
 app.get("/estoque/:id", estoqueController.buscarPorId);
 
-// Movimentações de estoque (entradas/saídas)
 app.post("/movimentos", movimentoEstoqueController.criar);
 
-// Relatórios
 app.get("/relatorios", relatorioController.gerar);
 
 // Inicialização do servidor
 app.listen(3000, () => {
-    console.log("Servidor rodando na porta http://localhost:3000");
+    console.log("Servidor rodando em: http://localhost:3000");
 });
