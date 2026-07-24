@@ -1,107 +1,870 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Gestão de Estoque - React + Flask</title>
-    <!-- React & Babel via CDN -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Tailwind CSS para o visual -->
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-8">
-
-    <div id="root"></div>
-
-    <script type="text/babel">
-        function App() {
-            const [produtos, setProdutos] = React.useState([]);
-            const [form, setForm] = React.useState({ nome: '', categoria: '', quantidade: '', unidade: 'un' });
-
-            // Buscar produtos do Backend (Flask)
-            const carregarProdutos = async () => {
-                const res = await fetch('http://localhost:3000/api/produtos');
-                const data = await res.json();
-                setProdutos(data);
-            };
-
-            React.useEffect(() => {
-                carregarProdutos();
-            }, []);
-
-            // Enviar novo produto para o Flask
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                await fetch('http://localhost:3000/api/produtos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(form)
-                });
-                setForm({ nome: '', categoria: '', quantidade: '', unidade: 'un' });
-                carregarProdutos(); // Atualiza a lista na tela
-            };
-
-            return (
-                <div class="max-w-4xl mx-auto space-y-6">
-                    <h1 class="text-3xl font-bold text-gray-800">📦 Gestão de Estoque</h1>
-
-                    {/* Formulário de Cadastro */}
-                    <form onSubmit={handleSubmit} class="bg-white p-6 rounded-lg shadow-md grid grid-cols-2 gap-4">
-                        <input type="text" placeholder="Nome do Produto" value={form.nome} 
-                               onChange={e => setForm({...form, nome: e.target.value})} required class="p-2 border rounded" />
-                        
-                        <input type="text" placeholder="Categoria" value={form.categoria} 
-                               onChange={e => setForm({...form, categoria: e.target.value})} required class="p-2 border rounded" />
-                        
-                        <input type="number" placeholder="Quantidade" value={form.quantidade} 
-                               onChange={e => setForm({...form, quantidade: e.target.value})} required class="p-2 border rounded" />
-                        
-                        <select value={form.unidade} onChange={e => setForm({...form, unidade: e.target.value})} class="p-2 border rounded">
-                            <option value="un">Unidade (un)</option>
-                            <option value="kg">Quilograma (kg)</option>
-                            <option value="L">Litro (L)</option>
-                        </select>
-
-                        <button type="submit" class="col-span-2 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-semibold">
-                            Cadastrar Produto
-                        </button>
-                    </form>
-
-                    {/* Tabela de Produtos */}
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="p-3">ID</th>
-                                    <th class="p-3">Nome</th>
-                                    <th class="p-3">Categoria</th>
-                                    <th class="p-3">Quantidade</th>
-                                    <th class="p-3">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {produtos.map(p => (
-                                    <tr key={p.id} class="border-b hover:bg-gray-50">
-                                        <td class="p-3">{p.id}</td>
-                                        <td class="p-3 font-medium">{p.nome}</td>
-                                        <td class="p-3">{p.categoria}</td>
-                                        <td class="p-3">{p.quantidade} {p.unidade}</td>
-                                        <td class="p-3">
-                                            <span class={`px-2 py-1 rounded text-xs font-bold ${p.estoque ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                {p.estoque ? 'Em Estoque' : 'Esgotado'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            );
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Estoque</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --accent-green: #10b981;
+            --accent-green-hover: #059669;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+            --font-family: 'Inter', sans-serif;
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            position: fixed;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px 24px 12px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-brand-icon {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .sidebar-brand-text {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .nav-item button {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .nav-item button:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .nav-item button.active {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 32px;
+            max-width: 1400px;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title { font-size: 24px; font-weight: 700; }
+        .page-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .metric-title { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-value { font-size: 28px; font-weight: 700; }
+        .metric-badge { align-self: flex-start; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+
+        .badge-green { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .badge-blue { background-color: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .badge-amber { background-color: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+        .badge-red { background-color: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 600; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+
+        .form-group input, .form-group select {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent-green); }
+
+        .btn {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn:hover { background-color: var(--accent-green-hover); }
+        .btn-secondary { background-color: var(--bg-card); color: var(--text-main); }
+        .btn-secondary:hover { background-color: var(--border-color); }
+        .btn-danger { background-color: var(--accent-red); }
+        .btn-danger:hover { background-color: #dc2626; }
+
+        .table-container { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th { background-color: var(--bg-primary); color: var(--text-muted); padding: 12px 16px; font-weight: 600; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+
+        .action-btns { display: flex; gap: 8px; }
+        .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 6px; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            padding: 24px;
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+
+        .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">E</div>
+            <div class="sidebar-brand-text">GestãoEstoque</div>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <button class="active" onclick="switchTab('dashboard')">📊 Visão Geral</button>
+            </li>
+            <li class="nav-item">
+                <button onclick="switchTab('produtos')">📦 Produtos</button>
+            </li>
+            <li class="nav-item">
+                <button onclick="switchTab('adicionar')">➕ Adicionar Produto</button>
+            </li>
+            <li class="nav-item">
+                <button onclick="switchTab('movimentos')">🔄 Movimentações</button>
+            </li>
+            <li class="nav-item">
+                <button onclick="switchTab('relatorios')">📈 Relatórios</button>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            Sistema Python Estoque v1.0
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <!-- TAB: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content active">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Painel Geral</h1>
+                    <p class="page-subtitle">Acompanhe métricas em tempo real e status do estoque.</p>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-title">Total de Produtos</span>
+                    <span class="metric-value" id="metric-total-prod">0</span>
+                    <span class="metric-badge badge-blue">Cadastrados</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-title">Itens em Estoque</span>
+                    <span class="metric-value" id="metric-em-estoque">0</span>
+                    <span class="metric-badge badge-green">Disponíveis</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-title">Fora de Estoque</span>
+                    <span class="metric-value" id="metric-fora-estoque">0</span>
+                    <span class="metric-badge badge-red">Indisponíveis</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-title">Movimentações</span>
+                    <span class="metric-value" id="metric-total-mov">0</span>
+                    <span class="metric-badge badge-amber">Registradas</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Resumo Recente de Produtos</h2>
+                    <button class="btn btn-sm" onclick="switchTab('produtos')">Ver Todos</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Quantidade</th>
+                                <th>Unidade</th>
+                                <th>Status</th>
+                                <th>Entrada</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-dashboard-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: PRODUTOS -->
+        <section id="tab-produtos" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Gerenciamento de Produtos</h1>
+                    <p class="page-subtitle">Visualize, filtre, edite e remova produtos salvos.</p>
+                </div>
+                <button class="btn" onclick="switchTab('adicionar')">➕ Novo Produto</button>
+            </div>
+
+            <div class="card">
+                <div class="filter-bar">
+                    <input type="text" id="search-produto" placeholder="Buscar por nome..." oninput="renderProdutos()">
+                    <select id="filter-categoria" onchange="renderProdutos()">
+                        <option value="">Todas as Categorias</option>
+                        <option value="filé de mignom">Filé de Mignon</option>
+                        <option value="carne">Carne</option>
+                        <option value="sobremesa">Sobremesa</option>
+                        <option value="pimenta">Pimenta</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Quantidade</th>
+                                <th>Unidade</th>
+                                <th>Estoque</th>
+                                <th>Data Entrada</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-produtos-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: ADICIONAR PRODUTO -->
+        <section id="tab-adicionar" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Cadastrar Novo Produto</h1>
+                    <p class="page-subtitle">Adicione itens respeitando a estrutura das dataclasses Python.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <form id="form-add-produto" onsubmit="handleAdicionarProduto(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="add-nome">Nome do Produto</label>
+                            <input type="text" id="add-nome" required placeholder="Ex: Filé Mignon Bovino">
+                        </div>
+                        <div class="form-group">
+                            <label for="add-categoria">Categoria</label>
+                            <select id="add-categoria" required>
+                                <option value="filé de mignom">Filé de Mignon</option>
+                                <option value="carne">Carne</option>
+                                <option value="sobremesa">Sobremesa</option>
+                                <option value="pimenta">Pimenta</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-quantidade">Quantidade Inicial</label>
+                            <input type="number" id="add-quantidade" min="0" required placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="add-unidade">Unidade de Medida</label>
+                            <select id="add-unidade" required>
+                                <option value="kg">kg</option>
+                                <option value="litro">litro</option>
+                                <option value="unidade">unidade</option>
+                                <option value="cx">caixa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Salvar Produto</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB: MOVIMENTAÇÕES -->
+        <section id="tab-movimentos" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Movimentações de Estoque</h1>
+                    <p class="page-subtitle">Registre entradas e saídas e acompanhe o histórico.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 16px;">Lançar Movimento</h2>
+                <form id="form-movimento" onsubmit="handleRegistrarMovimento(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="mov-produto">Produto</label>
+                            <select id="mov-produto" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="mov-tipo">Tipo de Movimento</label>
+                            <select id="mov-tipo" required>
+                                <option value="entrada">Entrada (+)</option>
+                                <option value="saida">Saída (-)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="mov-quantidade">Quantidade</label>
+                            <input type="number" id="mov-quantidade" min="1" required placeholder="1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Registrar Movimento</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 16px;">Histórico de Movimentações</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID Mov.</th>
+                                <th>ID Prod.</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Quantidade</th>
+                                <th>Unidade</th>
+                                <th>Data Movimento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-movimentos-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: RELATÓRIOS -->
+        <section id="tab-relatorios" class="tab-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Relatórios de Estoque</h1>
+                    <p class="page-subtitle">Gere resumos periódicos baseados na estrutura de Relatorio.</p>
+                </div>
+                <button class="btn" onclick="gerarNovoRelatorio()">⚡ Gerar Novo Relatório</button>
+            </div>
+
+            <div id="container-relatorios"></div>
+        </section>
+
+    </main>
+
+    <!-- Modal Editar Produto -->
+    <div id="modal-editar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Atualizar Produto</h3>
+                <button class="close-btn" onclick="fecharModal()">&times;</button>
+            </div>
+            <form id="form-edit-produto" onsubmit="handleSalvarEdicao(event)">
+                <input type="hidden" id="edit-id">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="edit-nome">Nome</label>
+                    <input type="text" id="edit-nome" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="edit-categoria">Categoria</label>
+                    <select id="edit-categoria" required>
+                        <option value="filé de mignom">Filé de Mignon</option>
+                        <option value="carne">Carne</option>
+                        <option value="sobremesa">Sobremesa</option>
+                        <option value="pimenta">Pimenta</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="edit-quantidade">Quantidade</label>
+                    <input type="number" id="edit-quantidade" min="0" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="edit-unidade">Unidade</label>
+                    <select id="edit-unidade" required>
+                        <option value="kg">kg</option>
+                        <option value="litro">litro</option>
+                        <option value="unidade">unidade</option>
+                        <option value="cx">caixa</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Data Logic -->
+    <script>
+        const API_URL = '/api';
+
+        let state = {
+            produtos: [],
+            movimentos: [],
+            relatorios: []
+        };
+
+        async function fetchAll() {
+            try {
+                const [resProd, resMov, resRel] = await Promise.all([
+                    fetch(`${API_URL}/produtos`),
+                    fetch(`${API_URL}/movimentos`),
+                    fetch(`${API_URL}/relatorios`)
+                ]);
+
+                state.produtos = await resProd.json();
+                state.movimentos = await resMov.json();
+                state.relatorios = await resRel.json();
+
+                renderAll();
+            } catch (err) {
+                console.error("Erro ao carregar dados do servidor:", err);
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item button').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            const btn = Array.from(document.querySelectorAll('.nav-item button'))
+                .find(b => b.getAttribute('onclick').includes(tabName));
+            if (btn) btn.classList.add('active');
+
+            if (tabName === 'movimentos') populateMovimentoSelect();
+        }
+
+        function renderMetrics() {
+            const totalProd = state.produtos.length;
+            const emEstoque = state.produtos.filter(p => p.estoque && p.quantidade > 0).length;
+            const foraEstoque = totalProd - emEstoque;
+            const totalMov = state.movimentos.length;
+
+            document.getElementById('metric-total-prod').innerText = totalProd;
+            document.getElementById('metric-em-estoque').innerText = emEstoque;
+            document.getElementById('metric-fora-estoque').innerText = foraEstoque;
+            document.getElementById('metric-total-mov').innerText = totalMov;
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return "-";
+            const date = new Date(isoString);
+            return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function renderDashboardTable() {
+            const tbody = document.getElementById('table-dashboard-tbody');
+            tbody.innerHTML = '';
+            
+            state.produtos.slice(-5).reverse().forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${p.id}</td>
+                    <td><strong>${p.nome}</strong></td>
+                    <td>${p.categoria}</td>
+                    <td>${p.quantidade}</td>
+                    <td>${p.unidade}</td>
+                    <td>
+                        <span class="metric-badge ${p.quantidade > 0 ? 'badge-green' : 'badge-red'}">
+                            ${p.quantidade > 0 ? 'Em Estoque' : 'Esgotado'}
+                        </span>
+                    </td>
+                    <td>${formatDate(p.data_entrada)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderProdutos() {
+            const tbody = document.getElementById('table-produtos-tbody');
+            tbody.innerHTML = '';
+
+            const searchTerm = document.getElementById('search-produto').value.toLowerCase();
+            const catFilter = document.getElementById('filter-categoria').value;
+
+            const filtered = state.produtos.filter(p => {
+                const matchName = p.nome.toLowerCase().includes(searchTerm);
+                const matchCat = catFilter === "" || p.categoria === catFilter;
+                return matchName && matchCat;
+            });
+
+            filtered.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${p.id}</td>
+                    <td><strong>${p.nome}</strong></td>
+                    <td>${p.categoria}</td>
+                    <td>${p.quantidade}</td>
+                    <td>${p.unidade}</td>
+                    <td>
+                        <span class="metric-badge ${p.quantidade > 0 ? 'badge-green' : 'badge-red'}">
+                            ${p.quantidade > 0 ? 'SIM' : 'NÃO'}
+                        </span>
+                    </td>
+                    <td>${formatDate(p.data_entrada)}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-sm btn-secondary" onclick="abrirModalEditar(${p.id})">✏️ Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="removerProduto(${p.id})">🗑️ Remover</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMovimentos() {
+            const tbody = document.getElementById('table-movimentos-tbody');
+            tbody.innerHTML = '';
+
+            state.movimentos.slice().reverse().forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${m.id}</td>
+                    <td>#${m.produto_id}</td>
+                    <td>${m.categoria}</td>
+                    <td>
+                        <span class="metric-badge ${m.tipo_movimento === 'entrada' ? 'badge-green' : 'badge-red'}">
+                            ${m.tipo_movimento.toUpperCase()}
+                        </span>
+                    </td>
+                    <td>${m.quantidade}</td>
+                    <td>${m.unidade}</td>
+                    <td>${formatDate(m.data_movimento)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderRelatorios() {
+            const container = document.getElementById('container-relatorios');
+            container.innerHTML = '';
+
+            if (state.relatorios.length === 0) {
+                container.innerHTML = `<div class="card"><p style="color:var(--text-muted)">Nenhum relatório gerado ainda. Clique no botão acima para gerar.</p></div>`;
+                return;
+            }
+
+            state.relatorios.slice().reverse().forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Relatório ${r.tipo} #${r.id}</h3>
+                            <p style="font-size:12px; color:var(--text-muted)">Gerado em: ${formatDate(r.datahora)}</p>
+                        </div>
+                        <span class="metric-badge badge-blue">${r.tipo}</span>
+                    </div>
+                    <div class="metrics-grid" style="margin-bottom:0">
+                        <div style="background-color:var(--bg-primary); padding:12px; border-radius:8px;">
+                            <span style="font-size:12px; color:var(--text-muted)">Total Movimentos</span>
+                            <div style="font-size:20px; font-weight:700">${r.total_movimentos}</div>
+                        </div>
+                        <div style="background-color:var(--bg-primary); padding:12px; border-radius:8px;">
+                            <span style="font-size:12px; color:var(--text-muted)">Total Entradas</span>
+                            <div style="font-size:20px; font-weight:700; color:var(--accent-green)">+${r.total_entrada}</div>
+                        </div>
+                        <div style="background-color:var(--bg-primary); padding:12px; border-radius:8px;">
+                            <span style="font-size:12px; color:var(--text-muted)">Total Saídas</span>
+                            <div style="font-size:20px; font-weight:700; color:var(--accent-red)">-${r.total_saida}</div>
+                        </div>
+                        <div style="background-color:var(--bg-primary); padding:12px; border-radius:8px;">
+                            <span style="font-size:12px; color:var(--text-muted)">Itens no Estoque</span>
+                            <div style="font-size:20px; font-weight:700">${r.estoque_atual}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function populateMovimentoSelect() {
+            const select = document.getElementById('mov-produto');
+            select.innerHTML = '';
+            state.produtos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.innerText = `#${p.id} - ${p.nome} (${p.quantidade} ${p.unidade})`;
+                select.appendChild(opt);
+            });
+        }
+
+        // --- HANDLERS / CRUD ACTIONS (API CALLS) ---
+
+        async function handleAdicionarProduto(e) {
+            e.preventDefault();
+            const payload = {
+                nome: document.getElementById('add-nome').value,
+                categoria: document.getElementById('add-categoria').value,
+                quantidade: parseInt(document.getElementById('add-quantidade').value),
+                unidade: document.getElementById('add-unidade').value
+            };
+
+            const res = await fetch(`${API_URL}/produtos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                document.getElementById('form-add-produto').reset();
+                alert('Produto cadastrado com sucesso!');
+                await fetchAll();
+                switchTab('produtos');
+            }
+        }
+
+        async function handleRegistrarMovimento(e) {
+            e.preventDefault();
+            const payload = {
+                produto_id: parseInt(document.getElementById('mov-produto').value),
+                tipo_movimento: document.getElementById('mov-tipo').value,
+                quantidade: parseInt(document.getElementById('mov-quantidade').value)
+            };
+
+            const res = await fetch(`${API_URL}/movimentos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('Movimentação registrada com sucesso!');
+                await fetchAll();
+            } else {
+                const err = await res.json();
+                alert('Erro: ' + (err.error || 'Falha ao registrar movimento.'));
+            }
+        }
+
+        async function removerProduto(id) {
+            if (confirm(`Tem certeza que deseja remover o produto #${id}?`)) {
+                const res = await fetch(`${API_URL}/produtos/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    await fetchAll();
+                }
+            }
+        }
+
+        function abrirModalEditar(id) {
+            const p = state.produtos.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('edit-nome').value = p.nome;
+            document.getElementById('edit-categoria').value = p.categoria;
+            document.getElementById('edit-quantidade').value = p.quantidade;
+            document.getElementById('edit-unidade').value = p.unidade;
+
+            document.getElementById('modal-editar').classList.add('active');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-editar').classList.remove('active');
+        }
+
+        async function handleSalvarEdicao(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('edit-id').value);
+            const payload = {
+                nome: document.getElementById('edit-nome').value,
+                categoria: document.getElementById('edit-categoria').value,
+                quantidade: parseInt(document.getElementById('edit-quantidade').value),
+                unidade: document.getElementById('edit-unidade').value
+            };
+
+            const res = await fetch(`${API_URL}/produtos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                fecharModal();
+                await fetchAll();
+            }
+        }
+
+        async function gerarNovoRelatorio() {
+            const res = await fetch(`${API_URL}/relatorios`, { method: 'POST' });
+            if (res.ok) {
+                alert('Relatório gerado!');
+                await fetchAll();
+            }
+        }
+
+        function renderAll() {
+            renderMetrics();
+            renderDashboardTable();
+            renderProdutos();
+            renderMovimentos();
+            renderRelatorios();
+        }
+
+        // Init App
+        fetchAll();
     </script>
 </body>
 </html>
