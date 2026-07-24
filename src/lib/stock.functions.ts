@@ -77,15 +77,18 @@ export const updateProduct = createServerFn({ method: "POST" })
     const supabase = createPublicClient();
     const estoque = data.quantidade > 0;
 
+    const updatePayload: Record<string, unknown> = {
+      nome: data.nome,
+      categoria: data.categoria,
+      quantidade: data.quantidade,
+      unidade: data.unidade,
+      estoque,
+    };
+    if (data.data_entrada) updatePayload.data_entrada = data.data_entrada;
+
     const { data: product, error } = await supabase
       .from("products")
-      .update({
-        nome: data.nome,
-        categoria: data.categoria,
-        quantidade: data.quantidade,
-        unidade: data.unidade,
-        estoque,
-      })
+      .update(updatePayload)
       .eq("id", data.id)
       .select()
       .single();
