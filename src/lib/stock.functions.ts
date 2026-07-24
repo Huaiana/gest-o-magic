@@ -43,6 +43,7 @@ export const addProduct = createServerFn({ method: "POST" })
         unidade: data.unidade,
         estoque,
         data_entrada: now,
+        ultima_reposicao: data.quantidade > 0 ? now : null,
       })
       .select()
       .single();
@@ -63,6 +64,7 @@ export const addProduct = createServerFn({ method: "POST" })
 
     return product;
   });
+
 
 export const updateProduct = createServerFn({ method: "POST" })
   .inputValidator((input) =>
@@ -141,12 +143,21 @@ export const addMovement = createServerFn({ method: "POST" })
         : qtdAtual - data.quantidade;
     const novoEstoque = novaQtd > 0;
 
+    const productUpdate: {
+      quantidade: number;
+      estoque: boolean;
+      ultima_reposicao?: string;
+    } = { quantidade: novaQtd, estoque: novoEstoque };
+    if (data.tipo === "entrada") productUpdate.ultima_reposicao = when;
+
+
     const { error: updateError } = await supabase
       .from("products")
-      .update({ quantidade: novaQtd, estoque: novoEstoque })
+      .update(productUpdate)
       .eq("id", data.product_id);
 
     if (updateError) throw updateError;
+
 
     const { error: movError } = await supabase.from("movements").insert({
       product_id: data.product_id,
@@ -262,12 +273,28 @@ export const getReports = createServerFn({ method: "GET" }).handler(async () => 
   return data ?? [];
 });
 
-export const generateReport = createServerFn({ method: "POST" }).handler(
-  async () => {
+export const generateReport = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        tipo: z.enum(["Diário", "Semanal", "Mensal"]).default("Diário"),
+        observacao: z.string().optional(),
+      })
+      .parse(input ?? {}),
+  )
+  .handler(async ({ data }) => {
     const supabase = createPublicClient();
-    const now = new Date().toISOString();
+    const now = new Date();
+    const nowIso = now.toISOString();
 
-    const { data: movements, error: movError } = await supabase
+    // Compute period window based on tipo
+    const start = new Date(now);
+    if (data.tipo === "Diário") start.setHours(0, 0, 0, 0);
+    else if (data.tipo === "Semanal") start.setDate(start.getDate() - 7);
+    else start.setMonth(start.getMonth() - 1);
+    const startIso = start.toISOString();
+
+    const { data: movementsAll, error: movError } = await supabase
       .from("movements")
       .select("*");
     if (movError) throw movError;
@@ -277,32 +304,49 @@ export const generateReport = createServerFn({ method: "POST" }).handler(
       .select("*");
     if (prodError) throw prodError;
 
-    const totalMov = movements?.length ?? 0;
+    const movements = (movementsAll ?? []).filter((m) => {
+      const t = new Date(m.data_movimento).getTime();
+      return t >= start.getTime() && t <= now.getTime();
+    });
+
+    const totalMov = movements.length;
     const totalEntrada = movements
-      ?.filter((m) => m.tipo === "entrada")
-      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0) ?? 0;
+      .filter((m) => m.tipo === "entrada")
+      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
     const totalSaida = movements
-      ?.filter((m) => m.tipo === "saida")
-      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0) ?? 0;
+      .filter((m) => m.tipo === "saida")
+      .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
     const estoqueAtual = products?.filter((p) => (p.estoque ?? false)).length ?? 0;
 
     const { data: report, error } = await supabase
       .from("reports")
       .insert({
-        tipo: "Diário",
-        datahora: now,
+        tipo: data.tipo,
+        datahora: nowIso,
         total_movimentos: totalMov,
         total_entrada: totalEntrada,
         total_saida: totalSaida,
         estoque_atual: estoqueAtual,
+        periodo_inicio: startIso,
+        periodo_fim: nowIso,
+        observacao: data.observacao ?? null,
       })
       .select()
       .single();
 
     if (error) throw error;
     return report;
-  },
-);
+  });
+
+export const deleteReport = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const supabase = createPublicClient();
+    const { error } = await supabase.from("reports").delete().eq("id", data.id);
+    if (error) throw error;
+    return { success: true };
+  });
+
 
 export const getDashboardStats = createServerFn({ method: "GET" }).handler(
   async () => {

@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FileText, Plus, Printer, Filter } from "lucide-react";
+import { FileText, Plus, Printer, Filter, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getReports, getMovements, getProducts, generateReport } from "@/lib/stock.functions";
+import { getReports, getMovements, getProducts, generateReport, deleteReport } from "@/lib/stock.functions";
 import { buildProductCodes } from "@/lib/product-code";
+
+type ReportTipo = "Diário" | "Semanal" | "Mensal";
+
 
 const reportsQueryOptions = () =>
   queryOptions({ queryKey: ["reports"], queryFn: () => getReports() });
@@ -35,11 +38,13 @@ function ReportsPage() {
   const { data: products } = useSuspenseQuery(productsQueryOptions());
   const queryClient = useQueryClient();
   const generateFn = useServerFn(generateReport);
+  const deleteReportFn = useServerFn(deleteReport);
 
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
   const [productId, setProductId] = useState("");
+  const [reportTipo, setReportTipo] = useState<ReportTipo>("Diário");
 
   const codes = useMemo(() => buildProductCodes(products), [products]);
   const categories = useMemo(
@@ -55,12 +60,18 @@ function ReportsPage() {
   );
 
   const generateMutation = useMutation({
-    mutationFn: () => generateFn(),
+    mutationFn: (tipo: ReportTipo) => generateFn({ data: { tipo } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
   });
+
+  const deleteReportMutation = useMutation({
+    mutationFn: (id: string) => deleteReportFn({ data: { id } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reports"] }),
+  });
+
 
   const filteredMovements = useMemo(() => {
     const startTs = dateStart ? new Date(dateStart + "T00:00:00").getTime() : -Infinity;
@@ -116,15 +127,25 @@ function ReportsPage() {
             Filtre por período e categoria, imprima em A4 ou exporte em PDF.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <select
+            value={reportTipo}
+            onChange={(e) => setReportTipo(e.target.value as ReportTipo)}
+            className="px-3 py-2 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="Diário">Diário</option>
+            <option value="Semanal">Semanal</option>
+            <option value="Mensal">Mensal</option>
+          </select>
           <button
-            onClick={() => generateMutation.mutate()}
+            onClick={() => generateMutation.mutate(reportTipo)}
             disabled={generateMutation.isPending}
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition disabled:opacity-70"
           >
             <Plus className="w-4 h-4" />
-            {generateMutation.isPending ? "Gerando..." : "Gerar relatório"}
+            {generateMutation.isPending ? "Salvando..." : "Salvar relatório"}
           </button>
+
           <button
             onClick={() => window.print()}
             className="inline-flex items-center gap-2 border border-border text-foreground hover:bg-secondary px-4 py-2 rounded-lg font-medium transition"
@@ -273,26 +294,34 @@ function ReportsPage() {
                   <th className="text-right px-3 py-2 font-medium">Entradas</th>
                   <th className="text-right px-3 py-2 font-medium">Saídas</th>
                   <th className="text-right px-3 py-2 font-medium">Estoque atual</th>
+                  <th className="text-left px-3 py-2 font-medium">Última reposição</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {perProduct.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
                       Sem dados no filtro selecionado.
                     </td>
                   </tr>
                 ) : (
-                  perProduct.map(({ product, entradas, saidas }) => (
-                    <tr key={product.id}>
-                      <td className="px-3 py-2 font-mono text-xs">{codes.get(product.id)}</td>
-                      <td className="px-3 py-2 text-foreground">{product.nome}</td>
-                      <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
-                      <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
-                      <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
-                    </tr>
-                  ))
+                  perProduct.map(({ product, entradas, saidas }) => {
+                    const ultima = (product as { ultima_reposicao?: string | null }).ultima_reposicao;
+                    return (
+                      <tr key={product.id}>
+                        <td className="px-3 py-2 font-mono text-xs">{codes.get(product.id)}</td>
+                        <td className="px-3 py-2 text-foreground">{product.nome}</td>
+                        <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
+                        <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
+                        <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {ultima ? new Date(ultima).toLocaleString("pt-BR") : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
+
               </tbody>
             </table>
           </div>
@@ -366,37 +395,65 @@ function ReportsPage() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Data/Hora</th>
+                <th className="text-left px-4 py-3 font-medium">Período</th>
                 <th className="text-right px-4 py-3 font-medium">Movs.</th>
                 <th className="text-right px-4 py-3 font-medium">Entradas</th>
                 <th className="text-right px-4 py-3 font-medium">Saídas</th>
                 <th className="text-right px-4 py-3 font-medium">Estoque</th>
+                <th className="text-right px-4 py-3 font-medium">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {reports.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     Nenhum relatório gerado ainda.
                   </td>
                 </tr>
               ) : (
-                reports.map((r) => (
-                  <tr key={r.id} className="hover:bg-secondary/20 transition">
-                    <td className="px-4 py-3 text-foreground">{r.tipo}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {new Date(r.datahora).toLocaleString("pt-BR")}
-                    </td>
-                    <td className="px-4 py-3 text-right text-foreground">{r.total_movimentos}</td>
-                    <td className="px-4 py-3 text-right text-status-success">{r.total_entrada}</td>
-                    <td className="px-4 py-3 text-right text-status-danger">{r.total_saida}</td>
-                    <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
-                  </tr>
-                ))
+                reports.map((r) => {
+                  const rr = r as typeof r & { periodo_inicio?: string | null; periodo_fim?: string | null };
+                  const ini = rr.periodo_inicio ? new Date(rr.periodo_inicio).toLocaleDateString("pt-BR") : null;
+                  const fim = rr.periodo_fim ? new Date(rr.periodo_fim).toLocaleDateString("pt-BR") : null;
+                  return (
+                    <tr key={r.id} className="hover:bg-secondary/20 transition">
+                      <td className="px-4 py-3 text-foreground">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium">
+                          {r.tipo}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {new Date(r.datahora).toLocaleString("pt-BR")}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">
+                        {ini && fim ? `${ini} → ${fim}` : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right text-foreground">{r.total_movimentos}</td>
+                      <td className="px-4 py-3 text-right text-status-success">{r.total_entrada}</td>
+                      <td className="px-4 py-3 text-right text-status-danger">{r.total_saida}</td>
+                      <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => {
+                            if (confirm("Excluir este relatório do histórico?")) {
+                              deleteReportMutation.mutate(r.id);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 text-status-danger hover:text-red-400 transition"
+                          aria-label="Excluir relatório"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
+
     </div>
   );
 }
