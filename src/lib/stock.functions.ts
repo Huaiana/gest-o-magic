@@ -120,7 +120,7 @@ export const addMovement = createServerFn({ method: "POST" })
   .inputValidator((input) => movementSchema.parse(input))
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
-    const now = new Date().toISOString();
+    const when = data.data_movimento ?? new Date().toISOString();
 
     const { data: product, error: prodError } = await supabase
       .from("products")
