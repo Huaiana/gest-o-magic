@@ -48,7 +48,7 @@ function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
   const generateMutation = useMutation({
-    mutationFn: generateFn,
+    mutationFn: () => generateFn(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
