@@ -294,26 +294,34 @@ function ReportsPage() {
                   <th className="text-right px-3 py-2 font-medium">Entradas</th>
                   <th className="text-right px-3 py-2 font-medium">Saídas</th>
                   <th className="text-right px-3 py-2 font-medium">Estoque atual</th>
+                  <th className="text-left px-3 py-2 font-medium">Última reposição</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {perProduct.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
                       Sem dados no filtro selecionado.
                     </td>
                   </tr>
                 ) : (
-                  perProduct.map(({ product, entradas, saidas }) => (
-                    <tr key={product.id}>
-                      <td className="px-3 py-2 font-mono text-xs">{codes.get(product.id)}</td>
-                      <td className="px-3 py-2 text-foreground">{product.nome}</td>
-                      <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
-                      <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
-                      <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
-                    </tr>
-                  ))
+                  perProduct.map(({ product, entradas, saidas }) => {
+                    const ultima = (product as { ultima_reposicao?: string | null }).ultima_reposicao;
+                    return (
+                      <tr key={product.id}>
+                        <td className="px-3 py-2 font-mono text-xs">{codes.get(product.id)}</td>
+                        <td className="px-3 py-2 text-foreground">{product.nome}</td>
+                        <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
+                        <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
+                        <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {ultima ? new Date(ultima).toLocaleString("pt-BR") : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
+
               </tbody>
             </table>
           </div>
