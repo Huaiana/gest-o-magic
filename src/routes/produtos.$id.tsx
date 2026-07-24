@@ -51,8 +51,14 @@ function EditProductPage() {
     categoria: product?.categoria ?? "",
     quantidade: String(product?.quantidade ?? 0),
     unidade: product?.unidade ?? "",
+    data_entrada: product?.data_entrada
+      ? new Date(product.data_entrada).toISOString().slice(0, 16)
+      : "",
   });
   const [movementQty, setMovementQty] = useState("");
+  const [movementDate, setMovementDate] = useState(
+    new Date().toISOString().slice(0, 16),
+  );
   const [movementType, setMovementType] = useState<"entrada" | "saida">(
     search.action ?? "entrada",
   );
@@ -100,6 +106,9 @@ function EditProductPage() {
         categoria: form.categoria,
         quantidade: Number(form.quantidade),
         unidade: form.unidade,
+        data_entrada: form.data_entrada
+          ? new Date(form.data_entrada).toISOString()
+          : undefined,
       },
     });
   };
@@ -112,6 +121,9 @@ function EditProductPage() {
         product_id: id,
         tipo: movementType,
         quantidade: Number(movementQty),
+        data_movimento: movementDate
+          ? new Date(movementDate).toISOString()
+          : undefined,
       },
     });
   };
@@ -202,16 +214,27 @@ function EditProductPage() {
               />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Quantidade</label>
-            <input
-              type="number"
-              required
-              min="0"
-              value={form.quantidade}
-              onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Quantidade</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={form.quantidade}
+                onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Data de entrada</label>
+              <input
+                type="datetime-local"
+                value={form.data_entrada}
+                onChange={(e) => setForm({ ...form, data_entrada: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Link
@@ -259,19 +282,32 @@ function EditProductPage() {
             </button>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              Quantidade a {movementType === "entrada" ? "adicionar" : "remover"}
-            </label>
-            <input
-              type="number"
-              required
-              min="1"
-              value={movementQty}
-              onChange={(e) => setMovementQty(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Ex: 5"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quantidade a {movementType === "entrada" ? "adicionar" : "remover"}
+              </label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={movementQty}
+                onChange={(e) => setMovementQty(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: 5"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Data da movimentação
+              </label>
+              <input
+                type="datetime-local"
+                value={movementDate}
+                onChange={(e) => setMovementDate(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
