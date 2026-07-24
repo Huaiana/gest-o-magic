@@ -189,6 +189,13 @@ function Navbar() {
             Produtos
           </Link>
           <Link
+            to="/movimentacoes"
+            className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            onClick={() => setOpen(false)}
+          >
+            Movimentações
+          </Link>
+          <Link
             to="/relatorios"
             className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             onClick={() => setOpen(false)}
