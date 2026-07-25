@@ -28,6 +28,15 @@ function NewProductPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const addFn = useServerFn(addProduct);
+  const getProductsFn = useServerFn(getProducts);
+  const { data: existingProducts = [] } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => getProductsFn(),
+  });
+  const nameOptions = Array.from(new Set(existingProducts.map((p) => p.nome))).sort();
+  const categoryOptions = Array.from(new Set(existingProducts.map((p) => p.categoria))).sort();
+  const unitOptions = Array.from(new Set(existingProducts.map((p) => p.unidade))).sort();
+
 
   const mutation = useMutation({
     mutationFn: addFn,
