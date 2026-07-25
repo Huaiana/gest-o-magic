@@ -2,9 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Save, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { addProduct } from "@/lib/stock.functions";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { addProduct, getProducts } from "@/lib/stock.functions";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+
 
 export const Route = createFileRoute("/produtos/novo")({
   head: () => ({
