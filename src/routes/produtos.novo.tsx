@@ -91,15 +91,37 @@ function NewProductPage() {
 
       <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Nome do produto</label>
+          <label className="block text-sm font-medium text-foreground mb-1.5">
+            Nome do produto
+          </label>
           <input
             type="text"
             required
+            list="product-names"
             value={form.nome}
-            onChange={(e) => setForm({ ...form, nome: e.target.value })}
+            onChange={(e) => {
+              const nome = e.target.value;
+              const match = existingProducts.find((p) => p.nome === nome);
+              setForm((f) => ({
+                ...f,
+                nome,
+                categoria: match ? match.categoria : f.categoria,
+                unidade: match ? match.unidade : f.unidade,
+              }));
+            }}
             className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            placeholder="Ex: Arroz Integral 5kg"
+            placeholder="Selecione um cadastrado ou digite um novo"
           />
+          <datalist id="product-names">
+            {nameOptions.map((n) => (
+              <option key={n} value={n} />
+            ))}
+          </datalist>
+          {nameOptions.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Dica: comece a digitar para ver sugestões dos produtos já cadastrados.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -108,24 +130,37 @@ function NewProductPage() {
             <input
               type="text"
               required
+              list="product-categories"
               value={form.categoria}
               onChange={(e) => setForm({ ...form, categoria: e.target.value })}
               className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="Ex: Grãos"
             />
+            <datalist id="product-categories">
+              {categoryOptions.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Unidade</label>
             <input
               type="text"
               required
+              list="product-units"
               value={form.unidade}
               onChange={(e) => setForm({ ...form, unidade: e.target.value })}
               className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="Ex: un, kg, litros"
             />
+            <datalist id="product-units">
+              {unitOptions.map((u) => (
+                <option key={u} value={u} />
+              ))}
+            </datalist>
           </div>
         </div>
+
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">Quantidade inicial</label>
