@@ -114,15 +114,16 @@ function NewProductPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            {isRestock ? "Repor Produto" : "Novo Produto"}
+            {isRestock ? "Movimentar Produto" : "Novo Produto"}
           </h1>
           <p className="text-sm text-muted-foreground">
             {isRestock
-              ? "Registre uma nova reposição para este produto"
+              ? "Registre uma entrada (reposição) ou saída deste produto"
               : "Preencha os dados do produto"}
           </p>
         </div>
       </div>
+
 
       {error && (
         <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg">
