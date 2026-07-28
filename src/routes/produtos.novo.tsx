@@ -24,7 +24,9 @@ function NewProductPage() {
     quantidade: "",
     unidade: "",
     data_reposicao: new Date().toISOString().slice(0, 10),
+    tipo: "entrada" as "entrada" | "saida",
   });
+
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
