@@ -284,7 +284,7 @@ function NewProductPage() {
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-lg font-semibold transition disabled:opacity-70"
           >
             <Save className="w-4 h-4" />
-            {isPending ? "Salvando..." : isRestock ? "Registrar Reposição" : "Salvar Produto"}
+            {isPending ? "Salvando..." : isRestock ? (form.tipo === "entrada" ? "Registrar Reposição" : "Registrar Saída") : "Salvar Produto"}
           </button>
         </div>
       </form>
