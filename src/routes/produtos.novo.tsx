@@ -206,23 +206,58 @@ function NewProductPage() {
         )}
 
         {isRestock && (
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              Data da reposição
-            </label>
-            <input
-              type="date"
-              required
-              value={form.data_reposicao}
-              onChange={(e) => setForm({ ...form, data_reposicao: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
+          <>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Tipo de movimentação
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, tipo: "entrada" })}
+                  className={`px-3 py-2.5 rounded-lg border font-medium transition ${
+                    form.tipo === "entrada"
+                      ? "bg-status-success/20 border-status-success text-status-success"
+                      : "border-border text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  Entrada (reposição)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, tipo: "saida" })}
+                  className={`px-3 py-2.5 rounded-lg border font-medium transition ${
+                    form.tipo === "saida"
+                      ? "bg-status-danger/20 border-status-danger text-status-danger"
+                      : "border-border text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  Saída
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                {form.tipo === "entrada" ? "Data da reposição" : "Data da saída"}
+              </label>
+              <input
+                type="date"
+                required
+                value={form.data_reposicao}
+                onChange={(e) => setForm({ ...form, data_reposicao: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+          </>
         )}
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">
-            {isRestock ? "Quantidade a repor" : "Quantidade inicial"}
+            {isRestock
+              ? form.tipo === "entrada"
+                ? "Quantidade a repor"
+                : "Quantidade de saída"
+              : "Quantidade inicial"}
           </label>
           <input
             type="number"
@@ -234,6 +269,7 @@ function NewProductPage() {
             placeholder="Ex: 10"
           />
         </div>
+
 
         <div className="flex justify-end gap-3 pt-2">
           <Link
