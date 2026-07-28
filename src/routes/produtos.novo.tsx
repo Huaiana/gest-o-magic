@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Save, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { addProduct, getProducts } from "@/lib/stock.functions";
+import { addProduct, getProducts, addMovement } from "@/lib/stock.functions";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -23,11 +23,13 @@ function NewProductPage() {
     categoria: "",
     quantidade: "",
     unidade: "",
+    data_reposicao: new Date().toISOString().slice(0, 10),
   });
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const addFn = useServerFn(addProduct);
+  const addMovementFn = useServerFn(addMovement);
   const getProductsFn = useServerFn(getProducts);
   const { data: existingProducts = [] } = useQuery({
     queryKey: ["products"],
@@ -37,29 +39,59 @@ function NewProductPage() {
   const categoryOptions = Array.from(new Set(existingProducts.map((p) => p.categoria))).sort();
   const unitOptions = Array.from(new Set(existingProducts.map((p) => p.unidade))).sort();
 
+  const existingMatch = existingProducts.find((p) => p.nome === form.nome);
+  const isRestock = Boolean(existingMatch);
 
-  const mutation = useMutation({
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    queryClient.invalidateQueries({ queryKey: ["movements"] });
+  };
+
+  const addMutation = useMutation({
     mutationFn: addFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["movements"] });
+      invalidate();
       navigate({ to: "/produtos" });
     },
     onError: (err: Error) => setError(err.message),
   });
 
+  const movMutation = useMutation({
+    mutationFn: addMovementFn,
+    onSuccess: () => {
+      invalidate();
+      navigate({ to: "/produtos" });
+    },
+    onError: (err: Error) => setError(err.message),
+  });
+
+  const isPending = addMutation.isPending || movMutation.isPending;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    mutation.mutate({
-      data: {
-        nome: form.nome,
-        categoria: form.categoria,
-        quantidade: Number(form.quantidade),
-        unidade: form.unidade,
-      },
-    });
+    const qtd = Number(form.quantidade);
+    if (isRestock && existingMatch) {
+      const when = new Date(form.data_reposicao + "T12:00:00").toISOString();
+      movMutation.mutate({
+        data: {
+          product_id: existingMatch.id,
+          tipo: "entrada",
+          quantidade: qtd,
+          data_movimento: when,
+        },
+      });
+    } else {
+      addMutation.mutate({
+        data: {
+          nome: form.nome,
+          categoria: form.categoria,
+          quantidade: qtd,
+          unidade: form.unidade,
+        },
+      });
+    }
   };
 
   return (
@@ -78,8 +110,14 @@ function NewProductPage() {
           <Package className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Novo Produto</h1>
-          <p className="text-sm text-muted-foreground">Preencha os dados do produto</p>
+          <h1 className="text-2xl font-bold text-foreground">
+            {isRestock ? "Repor Produto" : "Novo Produto"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isRestock
+              ? "Registre uma nova reposição para este produto"
+              : "Preencha os dados do produto"}
+          </p>
         </div>
       </div>
 
@@ -124,50 +162,68 @@ function NewProductPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Categoria</label>
-            <input
-              type="text"
-              required
-              list="product-categories"
-              value={form.categoria}
-              onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Ex: Grãos"
-            />
-            <datalist id="product-categories">
-              {categoryOptions.map((c) => (
-                <option key={c} value={c} />
-              ))}
-            </datalist>
+        {!isRestock && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Categoria</label>
+              <input
+                type="text"
+                required
+                list="product-categories"
+                value={form.categoria}
+                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: Grãos"
+              />
+              <datalist id="product-categories">
+                {categoryOptions.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Unidade</label>
+              <input
+                type="text"
+                required
+                list="product-units"
+                value={form.unidade}
+                onChange={(e) => setForm({ ...form, unidade: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: un, kg, litros"
+              />
+              <datalist id="product-units">
+                {unitOptions.map((u) => (
+                  <option key={u} value={u} />
+                ))}
+              </datalist>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Unidade</label>
-            <input
-              type="text"
-              required
-              list="product-units"
-              value={form.unidade}
-              onChange={(e) => setForm({ ...form, unidade: e.target.value })}
-              className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Ex: un, kg, litros"
-            />
-            <datalist id="product-units">
-              {unitOptions.map((u) => (
-                <option key={u} value={u} />
-              ))}
-            </datalist>
-          </div>
-        </div>
+        )}
 
+        {isRestock && (
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Data da reposição
+            </label>
+            <input
+              type="date"
+              required
+              value={form.data_reposicao}
+              onChange={(e) => setForm({ ...form, data_reposicao: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+        )}
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Quantidade inicial</label>
+          <label className="block text-sm font-medium text-foreground mb-1.5">
+            {isRestock ? "Quantidade a repor" : "Quantidade inicial"}
+          </label>
           <input
             type="number"
             required
-            min="0"
+            min={isRestock ? "1" : "0"}
             value={form.quantidade}
             onChange={(e) => setForm({ ...form, quantidade: e.target.value })}
             className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -184,11 +240,11 @@ function NewProductPage() {
           </Link>
           <button
             type="submit"
-            disabled={mutation.isPending}
+            disabled={isPending}
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-lg font-semibold transition disabled:opacity-70"
           >
             <Save className="w-4 h-4" />
-            {mutation.isPending ? "Salvando..." : "Salvar Produto"}
+            {isPending ? "Salvando..." : isRestock ? "Registrar Reposição" : "Salvar Produto"}
           </button>
         </div>
       </form>
