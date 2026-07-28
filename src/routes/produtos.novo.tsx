@@ -79,11 +79,12 @@ function NewProductPage() {
       movMutation.mutate({
         data: {
           product_id: existingMatch.id,
-          tipo: "entrada",
+          tipo: form.tipo,
           quantidade: qtd,
           data_movimento: when,
         },
       });
+
     } else {
       addMutation.mutate({
         data: {
