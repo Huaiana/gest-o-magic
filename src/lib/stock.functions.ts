@@ -279,6 +279,9 @@ export const generateReport = createServerFn({ method: "POST" })
       .object({
         tipo: z.enum(["Diário", "Semanal", "Mensal"]).default("Diário"),
         observacao: z.string().optional(),
+        product_id: z.string().uuid().optional(),
+        periodo_inicio: z.string().optional(),
+        periodo_fim: z.string().optional(),
       })
       .parse(input ?? {}),
   )
@@ -287,12 +290,20 @@ export const generateReport = createServerFn({ method: "POST" })
     const now = new Date();
     const nowIso = now.toISOString();
 
-    // Compute period window based on tipo
-    const start = new Date(now);
-    if (data.tipo === "Diário") start.setHours(0, 0, 0, 0);
-    else if (data.tipo === "Semanal") start.setDate(start.getDate() - 7);
-    else start.setMonth(start.getMonth() - 1);
+    // Compute period window based on tipo (or explicit filter dates)
+    let start: Date;
+    let end = now;
+    if (data.periodo_inicio) {
+      start = new Date(data.periodo_inicio);
+    } else {
+      start = new Date(now);
+      if (data.tipo === "Diário") start.setHours(0, 0, 0, 0);
+      else if (data.tipo === "Semanal") start.setDate(start.getDate() - 7);
+      else start.setMonth(start.getMonth() - 1);
+    }
+    if (data.periodo_fim) end = new Date(data.periodo_fim);
     const startIso = start.toISOString();
+    const endIso = end.toISOString();
 
     const { data: movementsAll, error: movError } = await supabase
       .from("movements")
@@ -306,7 +317,9 @@ export const generateReport = createServerFn({ method: "POST" })
 
     const movements = (movementsAll ?? []).filter((m) => {
       const t = new Date(m.data_movimento).getTime();
-      return t >= start.getTime() && t <= now.getTime();
+      if (t < start.getTime() || t > end.getTime()) return false;
+      if (data.product_id && m.product_id !== data.product_id) return false;
+      return true;
     });
 
     const totalMov = movements.length;
@@ -316,7 +329,14 @@ export const generateReport = createServerFn({ method: "POST" })
     const totalSaida = movements
       .filter((m) => m.tipo === "saida")
       .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
-    const estoqueAtual = products?.filter((p) => (p.estoque ?? false)).length ?? 0;
+
+    const selected = data.product_id
+      ? products?.find((p) => p.id === data.product_id)
+      : undefined;
+
+    const estoqueAtual = selected
+      ? (selected.quantidade ?? 0)
+      : products?.reduce((s, p) => s + (p.quantidade ?? 0), 0) ?? 0;
 
     const { data: report, error } = await supabase
       .from("reports")
@@ -328,7 +348,9 @@ export const generateReport = createServerFn({ method: "POST" })
         total_saida: totalSaida,
         estoque_atual: estoqueAtual,
         periodo_inicio: startIso,
-        periodo_fim: nowIso,
+        periodo_fim: endIso,
+        product_id: data.product_id ?? null,
+        produto_nome: selected?.nome ?? null,
         observacao: data.observacao ?? null,
       })
       .select()
@@ -337,6 +359,7 @@ export const generateReport = createServerFn({ method: "POST" })
     if (error) throw error;
     return report;
   });
+
 
 export const deleteReport = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
