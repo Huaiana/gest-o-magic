@@ -60,12 +60,21 @@ function ReportsPage() {
   );
 
   const generateMutation = useMutation({
-    mutationFn: (tipo: ReportTipo) => generateFn({ data: { tipo } }),
+    mutationFn: (tipo: ReportTipo) =>
+      generateFn({
+        data: {
+          tipo,
+          ...(productId ? { product_id: productId } : {}),
+          ...(dateStart ? { periodo_inicio: new Date(dateStart + "T00:00:00").toISOString() } : {}),
+          ...(dateEnd ? { periodo_fim: new Date(dateEnd + "T23:59:59").toISOString() } : {}),
+        },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
   });
+
 
   const deleteReportMutation = useMutation({
     mutationFn: (id: string) => deleteReportFn({ data: { id } }),
