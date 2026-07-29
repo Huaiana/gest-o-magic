@@ -60,12 +60,21 @@ function ReportsPage() {
   );
 
   const generateMutation = useMutation({
-    mutationFn: (tipo: ReportTipo) => generateFn({ data: { tipo } }),
+    mutationFn: (tipo: ReportTipo) =>
+      generateFn({
+        data: {
+          tipo,
+          ...(productId ? { product_id: productId } : {}),
+          ...(dateStart ? { periodo_inicio: new Date(dateStart + "T00:00:00").toISOString() } : {}),
+          ...(dateEnd ? { periodo_fim: new Date(dateEnd + "T23:59:59").toISOString() } : {}),
+        },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
   });
+
 
   const deleteReportMutation = useMutation({
     mutationFn: (id: string) => deleteReportFn({ data: { id } }),
@@ -396,11 +405,11 @@ function ReportsPage() {
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Data/Hora</th>
                 <th className="text-left px-4 py-3 font-medium">Período</th>
-                <th className="text-right px-4 py-3 font-medium">Movs.</th>
-                <th className="text-right px-4 py-3 font-medium">Entradas</th>
-                <th className="text-right px-4 py-3 font-medium">Saídas</th>
-                <th className="text-right px-4 py-3 font-medium">Estoque</th>
-                <th className="text-right px-4 py-3 font-medium">Ações</th>
+                <th className="text-left px-4 py-3 font-medium">Produto</th>
+                <th className="text-right px-4 py-3 font-medium">Entrada</th>
+                <th className="text-right px-4 py-3 font-medium">Saída</th>
+                <th className="text-right px-4 py-3 font-medium">Estoque atual</th>
+                <th className="text-right px-4 py-3 font-medium">Excluir</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -412,9 +421,18 @@ function ReportsPage() {
                 </tr>
               ) : (
                 reports.map((r) => {
-                  const rr = r as typeof r & { periodo_inicio?: string | null; periodo_fim?: string | null };
+                  const rr = r as typeof r & {
+                    periodo_inicio?: string | null;
+                    periodo_fim?: string | null;
+                    produto_nome?: string | null;
+                    product_id?: string | null;
+                  };
                   const ini = rr.periodo_inicio ? new Date(rr.periodo_inicio).toLocaleDateString("pt-BR") : null;
                   const fim = rr.periodo_fim ? new Date(rr.periodo_fim).toLocaleDateString("pt-BR") : null;
+                  const nomeProduto =
+                    (rr.product_id ? productMap.get(rr.product_id)?.nome : null) ??
+                    rr.produto_nome ??
+                    "Todos os produtos";
                   return (
                     <tr key={r.id} className="hover:bg-secondary/20 transition">
                       <td className="px-4 py-3 text-foreground">
@@ -428,10 +446,11 @@ function ReportsPage() {
                       <td className="px-4 py-3 text-muted-foreground text-xs">
                         {ini && fim ? `${ini} → ${fim}` : "—"}
                       </td>
-                      <td className="px-4 py-3 text-right text-foreground">{r.total_movimentos}</td>
-                      <td className="px-4 py-3 text-right text-status-success">{r.total_entrada}</td>
-                      <td className="px-4 py-3 text-right text-status-danger">{r.total_saida}</td>
+                      <td className="px-4 py-3 text-foreground">{nomeProduto}</td>
+                      <td className="px-4 py-3 text-right text-status-success">+{r.total_entrada}</td>
+                      <td className="px-4 py-3 text-right text-status-danger">-{r.total_saida}</td>
                       <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
+
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => {
