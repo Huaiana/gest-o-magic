@@ -93,6 +93,8 @@ export type Database = {
           observacao: string | null
           periodo_fim: string | null
           periodo_inicio: string | null
+          product_id: string | null
+          produto_nome: string | null
           tipo: string
           total_entrada: number
           total_movimentos: number
@@ -105,6 +107,8 @@ export type Database = {
           observacao?: string | null
           periodo_fim?: string | null
           periodo_inicio?: string | null
+          product_id?: string | null
+          produto_nome?: string | null
           tipo: string
           total_entrada?: number
           total_movimentos?: number
@@ -117,12 +121,22 @@ export type Database = {
           observacao?: string | null
           periodo_fim?: string | null
           periodo_inicio?: string | null
+          product_id?: string | null
+          produto_nome?: string | null
           tipo?: string
           total_entrada?: number
           total_movimentos?: number
           total_saida?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
