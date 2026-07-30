@@ -129,7 +129,7 @@ function ProductsPage() {
                 <th className="text-left px-4 py-3 font-medium">Código</th>
                 <th className="text-left px-4 py-3 font-medium">Nome</th>
                 <th className="text-left px-4 py-3 font-medium">Categoria</th>
-                <th className="text-left px-4 py-3 font-medium">Quantidade</th>
+                <th className="text-left px-4 py-3 font-medium">Quantidade (estoque atual)</th>
                 <th className="text-left px-4 py-3 font-medium">Unidade</th>
                 <th className="text-left px-4 py-3 font-medium">Status</th>
                 <th className="text-right px-4 py-3 font-medium">Ações</th>
@@ -170,20 +170,20 @@ function ProductsPage() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          to="/produtos/$id"
+                          to="/movimentos/$id"
                           params={{ id: p.id }}
-                          search={{ action: "entrada" }}
+                          search={{ tipo: "entrada" }}
                           className="p-2 rounded-lg bg-status-success/10 text-status-success hover:bg-status-success/20 transition"
-                          title="Registrar entrada"
+                          title="Ver todas as entradas"
                         >
                           <ArrowDownCircle className="w-4 h-4" />
                         </Link>
                         <Link
-                          to="/produtos/$id"
+                          to="/movimentos/$id"
                           params={{ id: p.id }}
-                          search={{ action: "saida" }}
+                          search={{ tipo: "saida" }}
                           className="p-2 rounded-lg bg-status-danger/10 text-status-danger hover:bg-status-danger/20 transition"
-                          title="Registrar saída"
+                          title="Ver todas as saídas"
                         >
                           <ArrowUpCircle className="w-4 h-4" />
                         </Link>

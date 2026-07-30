@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutosIndexRouteImport } from './routes/produtos.index'
 import { Route as ProdutosNovoRouteImport } from './routes/produtos.novo'
 import { Route as ProdutosIdRouteImport } from './routes/produtos.$id'
+import { Route as MovimentosIdRouteImport } from './routes/movimentos.$id'
 
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
@@ -64,6 +65,11 @@ const ProdutosIdRoute = ProdutosIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ProdutosRoute,
 } as any)
+const MovimentosIdRoute = MovimentosIdRouteImport.update({
+  id: '/movimentos/$id',
+  path: '/movimentos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRouteWithChildren
   '/relatorios': typeof RelatoriosRoute
+  '/movimentos/$id': typeof MovimentosIdRoute
   '/produtos/$id': typeof ProdutosIdRoute
   '/produtos/novo': typeof ProdutosNovoRoute
   '/produtos/': typeof ProdutosIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/movimentacoes': typeof MovimentacoesRoute
   '/relatorios': typeof RelatoriosRoute
+  '/movimentos/$id': typeof MovimentosIdRoute
   '/produtos/$id': typeof ProdutosIdRoute
   '/produtos/novo': typeof ProdutosNovoRoute
   '/produtos': typeof ProdutosIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/movimentacoes': typeof MovimentacoesRoute
   '/produtos': typeof ProdutosRouteWithChildren
   '/relatorios': typeof RelatoriosRoute
+  '/movimentos/$id': typeof MovimentosIdRoute
   '/produtos/$id': typeof ProdutosIdRoute
   '/produtos/novo': typeof ProdutosNovoRoute
   '/produtos/': typeof ProdutosIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/movimentacoes'
     | '/produtos'
     | '/relatorios'
+    | '/movimentos/$id'
     | '/produtos/$id'
     | '/produtos/novo'
     | '/produtos/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/movimentacoes'
     | '/relatorios'
+    | '/movimentos/$id'
     | '/produtos/$id'
     | '/produtos/novo'
     | '/produtos'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/movimentacoes'
     | '/produtos'
     | '/relatorios'
+    | '/movimentos/$id'
     | '/produtos/$id'
     | '/produtos/novo'
     | '/produtos/'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   MovimentacoesRoute: typeof MovimentacoesRoute
   ProdutosRoute: typeof ProdutosRouteWithChildren
   RelatoriosRoute: typeof RelatoriosRoute
+  MovimentosIdRoute: typeof MovimentosIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutosIdRouteImport
       parentRoute: typeof ProdutosRoute
     }
+    '/movimentos/$id': {
+      id: '/movimentos/$id'
+      path: '/movimentos/$id'
+      fullPath: '/movimentos/$id'
+      preLoaderRoute: typeof MovimentosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -233,6 +253,7 @@ const rootRouteChildren: RootRouteChildren = {
   MovimentacoesRoute: MovimentacoesRoute,
   ProdutosRoute: ProdutosRouteWithChildren,
   RelatoriosRoute: RelatoriosRoute,
+  MovimentosIdRoute: MovimentosIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
