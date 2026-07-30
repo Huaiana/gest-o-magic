@@ -85,22 +85,118 @@ function MovementsPage() {
     setEditDate(new Date(m.data_movimento).toISOString().slice(0, 16));
   };
 
+  const [filtro, setFiltro] = useState<"todas" | "entrada" | "saida">("todas");
+  const navigate = useNavigate();
+  const saveFn = useServerFn(generateReport);
+  const saveMutation = useMutation({
+    mutationFn: saveFn,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      navigate({ to: "/relatorios" });
+    },
+    onError: (e: Error) => setError(e.message),
+  });
+
+  const all = movements as Movement[];
+  const lista = all
+    .filter((m) => filtro === "todas" || m.tipo === filtro)
+    .sort(
+      (a, b) =>
+        new Date(b.data_movimento).getTime() - new Date(a.data_movimento).getTime(),
+    );
+  const totalEntradas = all
+    .filter((m) => m.tipo === "entrada")
+    .reduce((s, m) => s + (m.quantidade ?? 0), 0);
+  const totalSaidas = all
+    .filter((m) => m.tipo === "saida")
+    .reduce((s, m) => s + (m.quantidade ?? 0), 0);
+
+  const datas = all.map((m) => new Date(m.data_movimento).getTime());
+  const inicio = datas.length ? new Date(Math.min(...datas)).toISOString() : undefined;
+  const fim = datas.length ? new Date(Math.max(...datas)).toISOString() : undefined;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Movimentações</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Edite ou exclua entradas e saídas registradas
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Movimentações</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Histórico completo — registros anteriores nunca são apagados ao repor produtos
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() =>
+              saveMutation.mutate({
+                data: {
+                  tipo: "Diário",
+                  periodo_inicio: inicio,
+                  periodo_fim: fim,
+                  observacao:
+                    filtro === "todas"
+                      ? "Todas as entradas e saídas"
+                      : filtro === "entrada"
+                        ? "Todas as entradas"
+                        : "Todas as saídas",
+                },
+              })
+            }
+            disabled={saveMutation.isPending}
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white px-4 py-2 rounded-lg font-medium transition"
+          >
+            <Save className="w-4 h-4" />
+            {saveMutation.isPending ? "Salvando..." : "Salvar no relatório"}
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 border border-border text-foreground hover:bg-secondary px-4 py-2 rounded-lg font-medium transition"
+          >
+            <Printer className="w-4 h-4" />
+            Imprimir / PDF
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 no-print">
+        {(
+          [
+            ["todas", `Todas (${all.length})`],
+            ["entrada", `Entradas (${totalEntradas})`],
+            ["saida", `Saídas (${totalSaidas})`],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setFiltro(key)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+              filtro === key
+                ? "bg-primary/15 text-primary"
+                : "border border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {error && (
-        <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg">
+        <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg no-print">
           {error}
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="print-area bg-card border border-border rounded-xl overflow-hidden">
+        <div className="hidden print-only p-6 border-b border-border">
+          <h2 className="text-xl font-bold">EstoqueSync Soluções Ltda.</h2>
+          <p className="text-sm">
+            {filtro === "todas"
+              ? "Todas as movimentações"
+              : filtro === "entrada"
+                ? "Todas as entradas"
+                : "Todas as saídas"}{" "}
+            — emitido em {new Date().toLocaleString("pt-BR")}
+          </p>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-secondary/40 text-muted-foreground">
@@ -110,19 +206,20 @@ function MovementsPage() {
                 <th className="text-left px-4 py-3 font-medium">Categoria</th>
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Qtd</th>
-                <th className="text-right px-4 py-3 font-medium">Ações</th>
+                <th className="text-right px-4 py-3 font-medium no-print">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {movements.length === 0 ? (
+              {lista.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                     Nenhuma movimentação registrada.
                   </td>
                 </tr>
               ) : (
-                (movements as Movement[]).map((m) => (
+                lista.map((m) => (
                   <tr key={m.id} className="hover:bg-secondary/20 transition">
+
                     <td className="px-4 py-3 text-muted-foreground">
                       {new Date(m.data_movimento).toLocaleString("pt-BR")}
                     </td>
