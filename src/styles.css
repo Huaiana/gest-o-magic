@@ -156,4 +156,13 @@
   .print-area td {
     border-color: #cbd5e1 !important;
   }
+
+  /* Print only the history section when triggered from history print button */
+  body.print-history-only .no-print,
+  body.print-history-only .print-area:not(.bg-card.overflow-hidden) {
+    display: none !important;
+  }
+  body.print-history-only .print-area {
+    display: block !important;
+  }
 }
