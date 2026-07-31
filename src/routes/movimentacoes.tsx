@@ -229,7 +229,7 @@ function MovementsPage() {
               : filtro === "entrada"
                 ? "Todas as entradas"
                 : "Todas as saídas"}{" "}
-            — {produtoNome} — emitido em {new Date().toLocaleString("pt-BR")}
+            — {produtoNome} — emitido em {emitidoEm}
           </p>
           <p className="text-sm">
             Entradas: {totalEntradas} · Saídas: {totalSaidas}
