@@ -28,6 +28,8 @@ function NewProductPage() {
   });
 
   const [error, setError] = useState("");
+  const [bifesPorAlmoco, setBifesPorAlmoco] = useState(3);
+  const isContraFile = form.nome.toLowerCase().includes("contra fil");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const addFn = useServerFn(addProduct);
