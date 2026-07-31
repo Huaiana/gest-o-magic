@@ -97,7 +97,20 @@ function MovementsPage() {
     onError: (e: Error) => setError(e.message),
   });
 
-  const all = movements as Movement[];
+  const [produtoId, setProdutoId] = useState<string>("todos");
+
+  const todos = movements as Movement[];
+  const produtos = Array.from(
+    new Map(
+      todos.map((m) => [m.product_id, m.products?.nome ?? "—"] as const),
+    ).entries(),
+  ).sort((a, b) => a[1].localeCompare(b[1], "pt-BR"));
+  const produtoNome =
+    produtoId === "todos"
+      ? "Todos os produtos"
+      : (produtos.find(([id]) => id === produtoId)?.[1] ?? "—");
+
+  const all = todos.filter((m) => produtoId === "todos" || m.product_id === produtoId);
   const lista = all
     .filter((m) => filtro === "todas" || m.tipo === filtro)
     .sort(
