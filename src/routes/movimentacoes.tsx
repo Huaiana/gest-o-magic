@@ -97,7 +97,20 @@ function MovementsPage() {
     onError: (e: Error) => setError(e.message),
   });
 
-  const all = movements as Movement[];
+  const [produtoId, setProdutoId] = useState<string>("todos");
+
+  const todos = movements as Movement[];
+  const produtos = Array.from(
+    new Map(
+      todos.map((m) => [m.product_id, m.products?.nome ?? "—"] as const),
+    ).entries(),
+  ).sort((a, b) => a[1].localeCompare(b[1], "pt-BR"));
+  const produtoNome =
+    produtoId === "todos"
+      ? "Todos os produtos"
+      : (produtos.find(([id]) => id === produtoId)?.[1] ?? "—");
+
+  const all = todos.filter((m) => produtoId === "todos" || m.product_id === produtoId);
   const lista = all
     .filter((m) => filtro === "todas" || m.tipo === filtro)
     .sort(
@@ -130,14 +143,16 @@ function MovementsPage() {
               saveMutation.mutate({
                 data: {
                   tipo: "Diário",
+                  product_id: produtoId === "todos" ? undefined : produtoId,
                   periodo_inicio: inicio,
                   periodo_fim: fim,
-                  observacao:
+                  observacao: `${
                     filtro === "todas"
                       ? "Todas as entradas e saídas"
                       : filtro === "entrada"
                         ? "Todas as entradas"
-                        : "Todas as saídas",
+                        : "Todas as saídas"
+                  } — ${produtoNome}`,
                 },
               })
             }
@@ -179,6 +194,22 @@ function MovementsPage() {
         ))}
       </div>
 
+      <div className="no-print flex flex-col sm:flex-row sm:items-center gap-2">
+        <label className="text-sm text-muted-foreground">Produto:</label>
+        <select
+          value={produtoId}
+          onChange={(e) => setProdutoId(e.target.value)}
+          className="px-3 py-2 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 sm:w-72"
+        >
+          <option value="todos">Todos os produtos ({todos.length})</option>
+          {produtos.map(([id, nome]) => (
+            <option key={id} value={id}>
+              {nome} ({todos.filter((m) => m.product_id === id).length})
+            </option>
+          ))}
+        </select>
+      </div>
+
       {error && (
         <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg no-print">
           {error}
@@ -194,7 +225,10 @@ function MovementsPage() {
               : filtro === "entrada"
                 ? "Todas as entradas"
                 : "Todas as saídas"}{" "}
-            — emitido em {new Date().toLocaleString("pt-BR")}
+            — {produtoNome} — emitido em {new Date().toLocaleString("pt-BR")}
+          </p>
+          <p className="text-sm">
+            Entradas: {totalEntradas} · Saídas: {totalSaidas}
           </p>
         </div>
         <div className="overflow-x-auto">
