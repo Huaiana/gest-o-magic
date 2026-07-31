@@ -225,7 +225,10 @@ function MovementsPage() {
               : filtro === "entrada"
                 ? "Todas as entradas"
                 : "Todas as saídas"}{" "}
-            — emitido em {new Date().toLocaleString("pt-BR")}
+            — {produtoNome} — emitido em {new Date().toLocaleString("pt-BR")}
+          </p>
+          <p className="text-sm">
+            Entradas: {totalEntradas} · Saídas: {totalSaidas}
           </p>
         </div>
         <div className="overflow-x-auto">
