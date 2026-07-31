@@ -194,6 +194,22 @@ function MovementsPage() {
         ))}
       </div>
 
+      <div className="no-print flex flex-col sm:flex-row sm:items-center gap-2">
+        <label className="text-sm text-muted-foreground">Produto:</label>
+        <select
+          value={produtoId}
+          onChange={(e) => setProdutoId(e.target.value)}
+          className="px-3 py-2 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 sm:w-72"
+        >
+          <option value="todos">Todos os produtos ({todos.length})</option>
+          {produtos.map(([id, nome]) => (
+            <option key={id} value={id}>
+              {nome} ({todos.filter((m) => m.product_id === id).length})
+            </option>
+          ))}
+        </select>
+      </div>
+
       {error && (
         <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg no-print">
           {error}
