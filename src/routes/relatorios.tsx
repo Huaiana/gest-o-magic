@@ -407,7 +407,7 @@ function ReportsPage() {
       </div>
 
       {/* History */}
-      <div className="print-area bg-card border border-border rounded-xl overflow-hidden no-print">
+      <div className="print-area print-history bg-card border border-border rounded-xl overflow-hidden no-print">
         <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
