@@ -52,6 +52,10 @@ function MovementsPage() {
   const [editType, setEditType] = useState<"entrada" | "saida">("entrada");
   const [editDate, setEditDate] = useState("");
   const [error, setError] = useState("");
+  const [emitidoEm, setEmitidoEm] = useState("");
+  useEffect(() => {
+    setEmitidoEm(new Date().toLocaleString("pt-BR"));
+  }, []);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["movements"] });
