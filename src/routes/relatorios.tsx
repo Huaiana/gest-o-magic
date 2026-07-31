@@ -407,10 +407,19 @@ function ReportsPage() {
       </div>
 
       {/* History */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden no-print">
-        <div className="p-4 border-b border-border flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Histórico de relatórios</h2>
+      <div className="print-area bg-card border border-border rounded-xl overflow-hidden no-print">
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Histórico de relatórios</h2>
+          </div>
+          <button
+            onClick={() => setPrintingHistory(true)}
+            className="inline-flex items-center justify-center gap-2 border border-border text-foreground hover:bg-secondary px-4 py-2 rounded-lg font-medium transition"
+          >
+            <Printer className="w-4 h-4" />
+            Imprimir histórico
+          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
