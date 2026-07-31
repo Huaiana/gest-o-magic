@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FileText, Plus, Printer, Filter, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -45,6 +45,7 @@ function ReportsPage() {
   const [category, setCategory] = useState("");
   const [productId, setProductId] = useState("");
   const [reportTipo, setReportTipo] = useState<ReportTipo>("Diário");
+  const [printingHistory, setPrintingHistory] = useState(false);
 
   const codes = useMemo(() => buildProductCodes(products), [products]);
   const categories = useMemo(
