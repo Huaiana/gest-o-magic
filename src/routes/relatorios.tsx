@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FileText, Plus, Printer, Filter, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -45,6 +45,7 @@ function ReportsPage() {
   const [category, setCategory] = useState("");
   const [productId, setProductId] = useState("");
   const [reportTipo, setReportTipo] = useState<ReportTipo>("Diário");
+  const [printingHistory, setPrintingHistory] = useState(false);
 
   const codes = useMemo(() => buildProductCodes(products), [products]);
   const categories = useMemo(
@@ -126,6 +127,19 @@ function ReportsPage() {
 
 
   const today = new Date().toLocaleDateString("pt-BR");
+
+  useEffect(() => {
+    if (printingHistory) {
+      document.body.classList.add("print-history-only");
+      const timer = setTimeout(() => {
+        window.print();
+        setPrintingHistory(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      document.body.classList.remove("print-history-only");
+    }
+  }, [printingHistory]);
 
   return (
     <div className="space-y-6">
@@ -393,10 +407,19 @@ function ReportsPage() {
       </div>
 
       {/* History */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden no-print">
-        <div className="p-4 border-b border-border flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Histórico de relatórios</h2>
+      <div className="print-area print-history bg-card border border-border rounded-xl overflow-hidden no-print">
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Histórico de relatórios</h2>
+          </div>
+          <button
+            onClick={() => setPrintingHistory(true)}
+            className="inline-flex items-center justify-center gap-2 border border-border text-foreground hover:bg-secondary px-4 py-2 rounded-lg font-medium transition"
+          >
+            <Printer className="w-4 h-4" />
+            Imprimir histórico
+          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
