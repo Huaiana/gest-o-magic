@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, Trash2, Save, X, Pencil, Printer } from "lucide-react";
 import {
   getMovements,
@@ -52,6 +52,10 @@ function MovementsPage() {
   const [editType, setEditType] = useState<"entrada" | "saida">("entrada");
   const [editDate, setEditDate] = useState("");
   const [error, setError] = useState("");
+  const [emitidoEm, setEmitidoEm] = useState("");
+  useEffect(() => {
+    setEmitidoEm(new Date().toLocaleString("pt-BR"));
+  }, []);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["movements"] });
@@ -225,7 +229,7 @@ function MovementsPage() {
               : filtro === "entrada"
                 ? "Todas as entradas"
                 : "Todas as saídas"}{" "}
-            — {produtoNome} — emitido em {new Date().toLocaleString("pt-BR")}
+            — {produtoNome} — emitido em {emitidoEm}
           </p>
           <p className="text-sm">
             Entradas: {totalEntradas} · Saídas: {totalSaidas}

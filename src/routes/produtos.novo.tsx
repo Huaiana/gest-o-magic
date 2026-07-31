@@ -28,6 +28,8 @@ function NewProductPage() {
   });
 
   const [error, setError] = useState("");
+  const [bifesPorAlmoco, setBifesPorAlmoco] = useState(3);
+  const isContraFile = form.nome.toLowerCase().includes("contra fil");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const addFn = useServerFn(addProduct);
@@ -268,6 +270,48 @@ function NewProductPage() {
             className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             placeholder="Ex: 10"
           />
+          {isContraFile && (
+            <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3 space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                Porção por almoço
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[3, 4].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setBifesPorAlmoco(n)}
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                      bifesPorAlmoco === n
+                        ? "bg-primary/20 border-primary text-primary"
+                        : "border-border text-muted-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {n} bifes = 1 almoço
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {Number(form.quantidade) > 0 ? (
+                  <>
+                    <span className="text-foreground font-semibold">
+                      {Number(form.quantidade)} un
+                    </span>{" "}
+                    equivalem a{" "}
+                    <span className="text-foreground font-semibold">
+                      {Math.floor(Number(form.quantidade) / bifesPorAlmoco)} almoço
+                      {Math.floor(Number(form.quantidade) / bifesPorAlmoco) === 1 ? "" : "s"}
+                    </span>
+                    {Number(form.quantidade) % bifesPorAlmoco > 0 && (
+                      <> (sobram {Number(form.quantidade) % bifesPorAlmoco} bifes)</>
+                    )}
+                  </>
+                ) : (
+                  "Informe a quantidade em unidades (bifes) para ver os almoços."
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
 
