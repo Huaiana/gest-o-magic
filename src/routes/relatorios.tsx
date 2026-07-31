@@ -128,6 +128,19 @@ function ReportsPage() {
 
   const today = new Date().toLocaleDateString("pt-BR");
 
+  useEffect(() => {
+    if (printingHistory) {
+      document.body.classList.add("print-history-only");
+      const timer = setTimeout(() => {
+        window.print();
+        setPrintingHistory(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      document.body.classList.remove("print-history-only");
+    }
+  }, [printingHistory]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
