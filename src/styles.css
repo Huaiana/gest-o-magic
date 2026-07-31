@@ -158,11 +158,24 @@
   }
 
   /* Print only the history section when triggered from history print button */
-  body.print-history-only .no-print,
-  body.print-history-only .print-area:not(.bg-card.overflow-hidden) {
+  body.print-history-only .no-print {
     display: none !important;
   }
-  body.print-history-only .print-area {
+  body.print-history-only .print-history {
     display: block !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+  }
+  body.print-history-only .print-history table {
+    color: #000000 !important;
+  }
+  body.print-history-only .print-history th,
+  body.print-history-only .print-history td {
+    border-color: #cbd5e1 !important;
   }
 }
