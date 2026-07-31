@@ -143,14 +143,16 @@ function MovementsPage() {
               saveMutation.mutate({
                 data: {
                   tipo: "Diário",
+                  product_id: produtoId === "todos" ? undefined : produtoId,
                   periodo_inicio: inicio,
                   periodo_fim: fim,
-                  observacao:
+                  observacao: `${
                     filtro === "todas"
                       ? "Todas as entradas e saídas"
                       : filtro === "entrada"
                         ? "Todas as entradas"
-                        : "Todas as saídas",
+                        : "Todas as saídas"
+                  } — ${produtoNome}`,
                 },
               })
             }
