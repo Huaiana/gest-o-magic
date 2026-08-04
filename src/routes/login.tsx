@@ -30,7 +30,7 @@ function LoginPage() {
         localStorage.setItem("estoqueSync_user", "admin");
         navigate({ to: "/dashboard" });
       } else {
-        setError("Usuário ou senha incorretos. Use admin/admin.");
+        setError("Usuário ou senha incorretos.");
       }
       setIsLoading(false);
     }, 600);
@@ -105,9 +105,6 @@ function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-muted-foreground">
-          <p>Dica: use <span className="font-medium text-foreground">admin</span> / <span className="font-medium text-foreground">admin</span></p>
-        </div>
       </div>
     </div>
   );
