@@ -35,8 +35,9 @@ function NewProductPage() {
     .replace(/[\u0300-\u036f]/g, "");
   const isContraFile = normalizedNome.includes("contra file");
   const isFileMignon = normalizedNome.includes("file mignon") || normalizedNome.includes("mignon");
-  const showBifeHelper = isContraFile || isFileMignon;
-  const ratioOptions = isFileMignon ? [2] : [3, 4];
+  const isFileFrango = normalizedNome.includes("frango");
+  const showBifeHelper = isContraFile || isFileMignon || isFileFrango;
+  const ratioOptions = isFileFrango ? [1, 2, 4] : isFileMignon ? [2] : [3, 4];
   const [bifesPorAlmocoState, setBifesPorAlmoco] = useState(3);
   const bifesPorAlmoco = ratioOptions.includes(bifesPorAlmocoState)
     ? bifesPorAlmocoState
@@ -301,7 +302,7 @@ function NewProductPage() {
               <label className="block text-sm font-medium text-foreground">
                 Porção por almoço
               </label>
-              <div className={`grid gap-2 ${ratioOptions.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+              <div className={`grid gap-2 ${ratioOptions.length === 3 ? "grid-cols-3" : ratioOptions.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
                 {ratioOptions.map((n) => (
                   <button
                     key={n}
