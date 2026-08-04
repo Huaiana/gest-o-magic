@@ -11,7 +11,7 @@ import {
   addMovement,
 } from "@/lib/stock.functions";
 
-const productsQueryOptions = () =>
+export const productsQueryOptions = () =>
   queryOptions({
     queryKey: ["products"],
     queryFn: () => getProducts(),

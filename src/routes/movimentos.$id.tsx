@@ -12,10 +12,10 @@ import {
 import { getProducts, getMovements, generateReport } from "@/lib/stock.functions";
 import { buildProductCodes } from "@/lib/product-code";
 
-const productsQueryOptions = () =>
+export const productsQueryOptions = () =>
   queryOptions({ queryKey: ["products"], queryFn: () => getProducts() });
 
-const movementsQueryOptions = () =>
+export const movementsQueryOptions = () =>
   queryOptions({ queryKey: ["movements"], queryFn: () => getMovements() });
 
 const searchSchema = z.object({

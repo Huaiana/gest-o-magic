@@ -10,7 +10,7 @@ import {
   generateReport,
 } from "@/lib/stock.functions";
 
-const movementsQueryOptions = () =>
+export const movementsQueryOptions = () =>
   queryOptions({
     queryKey: ["movements"],
     queryFn: () => getMovements(),

@@ -16,7 +16,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { buildProductCodes } from "@/lib/product-code";
 
-const productsQueryOptions = () =>
+export const productsQueryOptions = () =>
   queryOptions({
     queryKey: ["products"],
     queryFn: () => getProducts(),
