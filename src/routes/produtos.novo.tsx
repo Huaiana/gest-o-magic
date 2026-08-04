@@ -28,6 +28,7 @@ function NewProductPage() {
   });
 
   const [error, setError] = useState("");
+  const [nameMode, setNameMode] = useState<"select" | "new">("select");
   const normalizedNome = form.nome
     .toLowerCase()
     .normalize("NFD")
