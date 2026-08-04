@@ -12,7 +12,9 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { Box, LogIn, Menu, X } from "lucide-react";
+import { AuthProvider, useAuth } from "../lib/auth";
+import { LockScreen } from "../components/lock-screen";
+import { Box, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 function NotFoundComponent() {
@@ -122,6 +124,26 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+function AuthGate() {
+  const { ready, user } = useAuth();
+
+  if (!ready) {
+    return <div className="min-h-screen bg-background" />;
+  }
+
+  if (!user) {
+    return <LockScreen />;
+  }
+
+  return (
+    <>
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <main className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
@@ -129,12 +151,13 @@ function RootComponent() {
         </main>
         <Footer />
       </div>
-    </QueryClientProvider>
+    </>
   );
 }
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const { signOut } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
@@ -155,13 +178,14 @@ function Navbar() {
         </nav>
 
         <div className="flex items-center space-x-3">
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={signOut}
             className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md flex items-center space-x-2"
           >
-            <LogIn className="w-4 h-4" />
-            <span>Entrar</span>
-          </Link>
+            <LogOut className="w-4 h-4" />
+            <span>Sair</span>
+          </button>
           <button
             className="md:hidden p-2 text-muted-foreground"
             onClick={() => setOpen(!open)}
