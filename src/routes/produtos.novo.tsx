@@ -37,6 +37,7 @@ function NewProductPage() {
   const isFileMignon = normalizedNome.includes("file mignon") || normalizedNome.includes("mignon");
   const isFileFrango = normalizedNome.includes("frango");
   const showBifeHelper = isContraFile || isFileMignon || isFileFrango;
+  const meatUnitLabel = isFileFrango ? "filés" : "bifes";
   const ratioOptions = isFileFrango ? [1, 2, 4] : isFileMignon ? [2] : [3, 4];
   const [bifesPorAlmocoState, setBifesPorAlmoco] = useState(3);
   const bifesPorAlmoco = ratioOptions.includes(bifesPorAlmocoState)
