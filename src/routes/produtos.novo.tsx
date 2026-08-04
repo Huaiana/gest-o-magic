@@ -28,8 +28,18 @@ function NewProductPage() {
   });
 
   const [error, setError] = useState("");
-  const [bifesPorAlmoco, setBifesPorAlmoco] = useState(3);
-  const isContraFile = form.nome.toLowerCase().includes("contra fil");
+  const normalizedNome = form.nome
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  const isContraFile = normalizedNome.includes("contra file");
+  const isFileMignon = normalizedNome.includes("file mignon") || normalizedNome.includes("mignon");
+  const showBifeHelper = isContraFile || isFileMignon;
+  const ratioOptions = isFileMignon ? [2] : [3, 4];
+  const [bifesPorAlmocoState, setBifesPorAlmoco] = useState(3);
+  const bifesPorAlmoco = ratioOptions.includes(bifesPorAlmocoState)
+    ? bifesPorAlmocoState
+    : ratioOptions[0];
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const addFn = useServerFn(addProduct);
