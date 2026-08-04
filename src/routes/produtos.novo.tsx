@@ -280,13 +280,13 @@ function NewProductPage() {
             className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             placeholder="Ex: 10"
           />
-          {isContraFile && (
+          {showBifeHelper && (
             <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3 space-y-3">
               <label className="block text-sm font-medium text-foreground">
                 Porção por almoço
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {[3, 4].map((n) => (
+              <div className={`grid gap-2 ${ratioOptions.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                {ratioOptions.map((n) => (
                   <button
                     key={n}
                     type="button"
