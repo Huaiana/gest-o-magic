@@ -35,8 +35,9 @@ function NewProductPage() {
     .replace(/[\u0300-\u036f]/g, "");
   const isContraFile = normalizedNome.includes("contra file");
   const isFileMignon = normalizedNome.includes("file mignon") || normalizedNome.includes("mignon");
-  const showBifeHelper = isContraFile || isFileMignon;
-  const ratioOptions = isFileMignon ? [2] : [3, 4];
+  const isFileFrango = normalizedNome.includes("frango");
+  const showBifeHelper = isContraFile || isFileMignon || isFileFrango;
+  const ratioOptions = isFileFrango ? [1, 2, 4] : isFileMignon ? [2] : [3, 4];
   const [bifesPorAlmocoState, setBifesPorAlmoco] = useState(3);
   const bifesPorAlmoco = ratioOptions.includes(bifesPorAlmocoState)
     ? bifesPorAlmocoState
