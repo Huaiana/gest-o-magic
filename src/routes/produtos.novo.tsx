@@ -271,7 +271,7 @@ function NewProductPage() {
             placeholder="Ex: 10"
           />
           {isContraFile && (
-            <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3 space-y-2">
+            <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3 space-y-3">
               <label className="block text-sm font-medium text-foreground">
                 Porção por almoço
               </label>
@@ -291,13 +291,40 @@ function NewProductPage() {
                   </button>
                 ))}
               </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Quantidade de almoços
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={
+                    Number(form.quantidade) > 0
+                      ? String(Number(form.quantidade) / bifesPorAlmoco)
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const almocos = Number(e.target.value);
+                    setForm((f) => ({
+                      ...f,
+                      quantidade: e.target.value === "" ? "" : String(almocos * bifesPorAlmoco),
+                    }));
+                  }}
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Ex: 10 almoços"
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Digite os almoços para preencher a quantidade em unidades (bifes)
+                  automaticamente — ou digite as unidades acima.
+                </p>
+              </div>
               <p className="text-sm text-muted-foreground">
                 {Number(form.quantidade) > 0 ? (
                   <>
                     <span className="text-foreground font-semibold">
-                      {Number(form.quantidade)} un
+                      {Number(form.quantidade)} un (bifes)
                     </span>{" "}
-                    equivalem a{" "}
+                    ={" "}
                     <span className="text-foreground font-semibold">
                       {Math.floor(Number(form.quantidade) / bifesPorAlmoco)} almoço
                       {Math.floor(Number(form.quantidade) / bifesPorAlmoco) === 1 ? "" : "s"}
@@ -307,11 +334,12 @@ function NewProductPage() {
                     )}
                   </>
                 ) : (
-                  "Informe a quantidade em unidades (bifes) para ver os almoços."
+                  "Informe os almoços ou as unidades (bifes)."
                 )}
               </p>
             </div>
           )}
+
         </div>
 
 
