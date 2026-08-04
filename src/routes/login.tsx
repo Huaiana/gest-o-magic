@@ -30,7 +30,7 @@ function LoginPage() {
         localStorage.setItem("estoqueSync_user", "admin");
         navigate({ to: "/dashboard" });
       } else {
-        setError("Usuário ou senha incorretos. Use admin/admin.");
+        setError("Usuário ou senha incorretos.");
       }
       setIsLoading(false);
     }, 600);
@@ -63,7 +63,7 @@ function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="admin"
+              placeholder="Digite seu usuário"
               required
             />
           </div>
@@ -76,7 +76,7 @@ function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 pr-10"
-                placeholder="admin"
+                placeholder="Digite sua senha"
                 required
               />
               <button
@@ -105,9 +105,6 @@ function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-muted-foreground">
-          <p>Dica: use <span className="font-medium text-foreground">admin</span> / <span className="font-medium text-foreground">admin</span></p>
-        </div>
       </div>
     </div>
   );
