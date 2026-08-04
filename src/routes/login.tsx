@@ -76,7 +76,7 @@ function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 pr-10"
-                placeholder="Digite seu usuário"
+                placeholder="Digite sua senha"
                 required
               />
               <button
