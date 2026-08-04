@@ -37,6 +37,7 @@ function NewProductPage() {
   const isFileMignon = normalizedNome.includes("file mignon") || normalizedNome.includes("mignon");
   const isFileFrango = normalizedNome.includes("frango");
   const showBifeHelper = isContraFile || isFileMignon || isFileFrango;
+  const meatUnitLabel = isFileFrango ? "filés" : "bifes";
   const ratioOptions = isFileFrango ? [1, 2, 4] : isFileMignon ? [2] : [3, 4];
   const [bifesPorAlmocoState, setBifesPorAlmoco] = useState(3);
   const bifesPorAlmoco = ratioOptions.includes(bifesPorAlmocoState)
@@ -314,7 +315,7 @@ function NewProductPage() {
                         : "border-border text-muted-foreground hover:bg-secondary"
                     }`}
                   >
-                    {n} bifes = 1 almoço
+                    {n} {meatUnitLabel} = 1 almoço
                   </button>
                 ))}
               </div>
@@ -341,7 +342,7 @@ function NewProductPage() {
                   placeholder="Ex: 10 almoços"
                 />
                 <p className="text-xs text-muted-foreground mt-1.5">
-                  Digite os almoços para preencher a quantidade em unidades (bifes)
+                  Digite os almoços para preencher a quantidade em unidades ({meatUnitLabel})
                   automaticamente — ou digite as unidades acima.
                 </p>
               </div>
@@ -349,7 +350,7 @@ function NewProductPage() {
                 {Number(form.quantidade) > 0 ? (
                   <>
                     <span className="text-foreground font-semibold">
-                      {Number(form.quantidade)} un (bifes)
+                      {Number(form.quantidade)} un ({meatUnitLabel})
                     </span>{" "}
                     ={" "}
                     <span className="text-foreground font-semibold">
@@ -357,11 +358,11 @@ function NewProductPage() {
                       {Math.floor(Number(form.quantidade) / bifesPorAlmoco) === 1 ? "" : "s"}
                     </span>
                     {Number(form.quantidade) % bifesPorAlmoco > 0 && (
-                      <> (sobram {Number(form.quantidade) % bifesPorAlmoco} bifes)</>
+                      <> (sobram {Number(form.quantidade) % bifesPorAlmoco} {meatUnitLabel})</>
                     )}
                   </>
                 ) : (
-                  "Informe os almoços ou as unidades (bifes)."
+                  "Informe os almoços ou as unidades (filés/bifes)."
                 )}
               </p>
             </div>
