@@ -33,7 +33,7 @@ function LandingPage() {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
-            to="/login"
+            to="/dashboard"
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg shadow-primary/20"
           >
             Acessar Sistema
