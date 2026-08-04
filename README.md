@@ -1,36 +1,26 @@
-# Gest-o 🚀
+# Gestures Simplified
 
-Sistema de gerenciamento e suporte à interface de usuário (UX) desenvolvido para otimização de fluxos de trabalho e controle de processos.
+https://github.com/Huaiana/gest-o
 
----
+This project was built with [Lovable](https://lovable.dev).
 
-## 🔗 Links Principais
+**Live app**: https://gest-o-magic.lovable.app
 
-- **Site Online (Deploy):** [Acessar a Aplicação](https://seu-projeto.vercel.app) *(substitua por seu link público após publicar)*
-- **Repositório GitHub:** [https://github.com/Huaiana/gest-o](https://github.com/Huaiana/gest-o)
+## Build with Lovable
 
----
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/9057d606-593e-4cc5-a038-18bb5aa97352).
 
-## 🛠️ Tecnologias Utilizadas
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
-- **Backend:** Python 3.x, Flask, Gunicorn
-- **Frontend:** HTML5, CSS3, JavaScript
-- **Gerenciamento de Pacotes:** `pip`
-- **Hospedagem / Deploy:** Render / Vercel / PythonAnywhere
+## Development
 
----
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
-## 📁 Estrutura do Projeto
-
-```text
-gest-o/
-├── templates/         # Arquivos de páginas HTML
-│   └── index.html
-├── static/            # Arquivos estáticos
-│   ├── css/           # Estilos CSS
-│   └── js/            # Scripts JavaScript
-├── app.py             # Servidor principal Python (Flask)
-├── requirements.txt   # Dependências do projeto
-├── Procfile           # Configuração de deploy (Gunicorn)
-├── .gitignore         # Arquivos ignorados pelo Git
-└── README.md          # Documentação do projeto
+```sh
+git clone <this-repository-url>
+cd <repository-name>
+npm i
+npm run dev
+```
