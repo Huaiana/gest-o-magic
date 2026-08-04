@@ -148,34 +148,49 @@ function NewProductPage() {
           <label className="block text-sm font-medium text-foreground mb-1.5">
             Nome do produto
           </label>
-          <input
-            type="text"
-            required
-            list="product-names"
-            value={form.nome}
+          <select
+            value={nameMode === "new" ? "__new__" : form.nome}
             onChange={(e) => {
-              const nome = e.target.value;
-              const match = existingProducts.find((p) => p.nome === nome);
+              const value = e.target.value;
+              if (value === "__new__") {
+                setNameMode("new");
+                setForm((f) => ({ ...f, nome: "", categoria: "", unidade: "" }));
+                return;
+              }
+              setNameMode("select");
+              const match = existingProducts.find((p) => p.nome === value);
               setForm((f) => ({
                 ...f,
-                nome,
+                nome: value,
                 categoria: match ? match.categoria : f.categoria,
                 unidade: match ? match.unidade : f.unidade,
               }));
             }}
-            className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            placeholder="Selecione um cadastrado ou digite um novo"
-          />
-          <datalist id="product-names">
+            className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="">Selecione um produto cadastrado</option>
             {nameOptions.map((n) => (
-              <option key={n} value={n} />
+              <option key={n} value={n}>
+                {n}
+              </option>
             ))}
-          </datalist>
-          {nameOptions.length > 0 && (
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Dica: comece a digitar para ver sugestões dos produtos já cadastrados.
-            </p>
+            <option value="__new__">+ Cadastrar novo produto</option>
+          </select>
+          {nameMode === "new" && (
+            <input
+              type="text"
+              required
+              autoFocus
+              value={form.nome}
+              onChange={(e) => setForm({ ...form, nome: e.target.value })}
+              className="mt-2 w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Digite o nome do novo produto"
+            />
           )}
+          <p className="text-xs text-muted-foreground mt-1.5">
+            Clique na seta para ver todos os produtos cadastrados ou escolha "Cadastrar novo
+            produto".
+          </p>
         </div>
 
         {!isRestock && (
