@@ -302,7 +302,7 @@ function NewProductPage() {
               <label className="block text-sm font-medium text-foreground">
                 Porção por almoço
               </label>
-              <div className={`grid gap-2 ${ratioOptions.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+              <div className={`grid gap-2 ${ratioOptions.length === 3 ? "grid-cols-3" : ratioOptions.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
                 {ratioOptions.map((n) => (
                   <button
                     key={n}
