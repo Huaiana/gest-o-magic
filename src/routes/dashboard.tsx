@@ -16,13 +16,13 @@ import {
 } from "@/lib/stock.functions";
 import { useServerFn } from "@tanstack/react-start";
 
-const dashboardStatsQueryOptions = () =>
+export const dashboardStatsQueryOptions = () =>
   queryOptions({
     queryKey: ["dashboard-stats"],
     queryFn: () => getDashboardStats(),
   });
 
-const productsQueryOptions = () =>
+export const productsQueryOptions = () =>
   queryOptions({
     queryKey: ["products"],
     queryFn: () => getProducts(),

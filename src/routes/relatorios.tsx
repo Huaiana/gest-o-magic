@@ -10,11 +10,11 @@ import { buildProductCodes } from "@/lib/product-code";
 type ReportTipo = "Diário" | "Semanal" | "Mensal";
 
 
-const reportsQueryOptions = () =>
+export const reportsQueryOptions = () =>
   queryOptions({ queryKey: ["reports"], queryFn: () => getReports() });
 export const movementsQueryOptions = () =>
   queryOptions({ queryKey: ["movements"], queryFn: () => getMovements() });
-const productsQueryOptions = () =>
+export const productsQueryOptions = () =>
   queryOptions({ queryKey: ["products"], queryFn: () => getProducts() });
 
 export const Route = createFileRoute("/relatorios")({

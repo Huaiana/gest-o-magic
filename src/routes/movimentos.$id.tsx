@@ -12,7 +12,7 @@ import {
 import { getProducts, getMovements, generateReport } from "@/lib/stock.functions";
 import { buildProductCodes } from "@/lib/product-code";
 
-const productsQueryOptions = () =>
+export const productsQueryOptions = () =>
   queryOptions({ queryKey: ["products"], queryFn: () => getProducts() });
 
 export const movementsQueryOptions = () =>
