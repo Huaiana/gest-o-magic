@@ -15,7 +15,7 @@ import { buildProductCodes } from "@/lib/product-code";
 const productsQueryOptions = () =>
   queryOptions({ queryKey: ["products"], queryFn: () => getProducts() });
 
-const movementsQueryOptions = () =>
+export const movementsQueryOptions = () =>
   queryOptions({ queryKey: ["movements"], queryFn: () => getMovements() });
 
 const searchSchema = z.object({

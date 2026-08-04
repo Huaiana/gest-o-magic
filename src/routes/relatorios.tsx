@@ -12,7 +12,7 @@ type ReportTipo = "Diário" | "Semanal" | "Mensal";
 
 const reportsQueryOptions = () =>
   queryOptions({ queryKey: ["reports"], queryFn: () => getReports() });
-const movementsQueryOptions = () =>
+export const movementsQueryOptions = () =>
   queryOptions({ queryKey: ["movements"], queryFn: () => getMovements() });
 const productsQueryOptions = () =>
   queryOptions({ queryKey: ["products"], queryFn: () => getProducts() });
