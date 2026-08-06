@@ -167,6 +167,7 @@ export const addMovement = createServerFn({ method: "POST" })
       quantidade: data.quantidade,
       unidade: product.unidade,
       data_movimento: when,
+      pecas: data.pecas ?? null,
     });
 
     if (movError) throw movError;
