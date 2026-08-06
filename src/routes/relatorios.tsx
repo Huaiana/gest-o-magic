@@ -487,6 +487,7 @@ function ReportsPage() {
                       <td className="px-4 py-3 text-foreground">{nomeProduto}</td>
                       <td className="px-4 py-3 text-right text-status-success">+{r.total_entrada}</td>
                       <td className="px-4 py-3 text-right text-status-danger">-{r.total_saida}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">{rr.total_pecas || "—"}</td>
                       <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
 
                       <td className="px-4 py-3 text-right">
