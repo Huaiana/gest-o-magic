@@ -45,6 +45,11 @@ function NewProductPage() {
     : ratioOptions[0];
   const showPecaHelper = isContraFile || isFileMignon;
   const [pecas, setPecas] = useState("");
+  const isPimenta = normalizedNome.includes("pimenta");
+  const [poteG, setPoteG] = useState("");
+  const [poteP, setPoteP] = useState("");
+  const [quilos, setQuilos] = useState("");
+
   
 
   const queryClient = useQueryClient();
@@ -62,6 +67,17 @@ function NewProductPage() {
 
   const existingMatch = existingProducts.find((p) => p.nome === form.nome);
   const isRestock = Boolean(existingMatch);
+  const norm = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const pimentaG = existingProducts.find(
+    (p) => norm(p.nome).includes("pimenta") && norm(p.nome).includes("pote g"),
+  );
+  const pimentaP = existingProducts.find(
+    (p) => norm(p.nome).includes("pimenta") && norm(p.nome).includes("pote p"),
+  );
+  const showPimentaHelper = isRestock && isPimenta && Boolean(pimentaG || pimentaP);
+  const quilosAuto = Number(poteG || 0) * 3 + Number(poteP || 0) * 0.57;
+
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -89,10 +105,38 @@ function NewProductPage() {
 
   const isPending = addMutation.isPending || movMutation.isPending;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     const qtd = Number(form.quantidade);
+    if (showPimentaHelper) {
+      const when = new Date(form.data_reposicao + "T12:00:00").toISOString();
+      const entries = [
+        { produto: pimentaG, qty: Number(poteG || 0) },
+        { produto: pimentaP, qty: Number(poteP || 0) },
+      ].filter((entry) => entry.produto && entry.qty > 0);
+      if (entries.length === 0) {
+        setError("Informe a quantidade de potes G e/ou P.");
+        return;
+      }
+      try {
+        for (const entry of entries) {
+          await addMovementFn({
+            data: {
+              product_id: entry.produto!.id,
+              tipo: form.tipo,
+              quantidade: entry.qty,
+              data_movimento: when,
+            },
+          });
+        }
+        invalidate();
+        navigate({ to: "/produtos" });
+      } catch (err) {
+        setError((err as Error).message);
+      }
+      return;
+    }
     if (isRestock && existingMatch) {
       const when = new Date(form.data_reposicao + "T12:00:00").toISOString();
       movMutation.mutate({
@@ -117,6 +161,7 @@ function NewProductPage() {
       });
     }
   };
+
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -287,7 +332,63 @@ function NewProductPage() {
           </>
         )}
 
+        {showPimentaHelper && (
+          <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-4">
+            <p className="text-sm font-medium text-foreground">
+              Quantidade de potes de pimenta
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Pote G (3 kg)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={poteG}
+                  onChange={(e) => setPoteG(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Ex: 2 potes"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Pote P (570 g)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={poteP}
+                  onChange={(e) => setPoteP(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Ex: 5 potes"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quilos (apenas informativo)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={quilos}
+                onChange={(e) => setQuilos(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder={quilosAuto > 0 ? `Ex: ${quilosAuto.toFixed(2)} kg` : "Ex: 3 kg"}
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Referência: {quilosAuto.toFixed(2)} kg (Pote G 3 kg + Pote P 0,57 kg). Não altera a
+                quantidade de potes registrada.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!showPimentaHelper && (
         <div>
+
           <label className="block text-sm font-medium text-foreground mb-1.5">
             {isRestock
               ? form.tipo === "entrada"
@@ -405,6 +506,8 @@ function NewProductPage() {
           )}
 
         </div>
+        )}
+
 
 
         <div className="flex justify-end gap-3 pt-2">
