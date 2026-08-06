@@ -44,6 +44,7 @@ function NewProductPage() {
     ? bifesPorAlmocoState
     : ratioOptions[0];
   const showPecaHelper = isContraFile || isFileMignon;
+  const [pecas, setPecas] = useState("");
   
 
   const queryClient = useQueryClient();
