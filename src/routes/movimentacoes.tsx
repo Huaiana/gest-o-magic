@@ -38,6 +38,7 @@ type Movement = {
   quantidade: number;
   unidade: string;
   data_movimento: string;
+  pecas?: number | null;
   products?: { nome: string } | null;
 };
 
