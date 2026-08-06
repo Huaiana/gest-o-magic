@@ -120,7 +120,9 @@ function ReportsPage() {
         const movs = filteredMovements.filter((m) => m.product_id === p.id);
         const entradas = movs.filter((m) => m.tipo === "entrada").reduce((s, m) => s + m.quantidade, 0);
         const saidas = movs.filter((m) => m.tipo === "saida").reduce((s, m) => s + m.quantidade, 0);
-        return { product: p, entradas, saidas, movs: movs.length };
+        const pecas = movs.reduce((s, m) => s + ((m as { pecas?: number | null }).pecas ?? 0), 0);
+        return { product: p, entradas, saidas, pecas, movs: movs.length };
+
       })
       .sort((a, b) => a.product.nome.localeCompare(b.product.nome));
   }, [filteredProducts, filteredMovements]);
