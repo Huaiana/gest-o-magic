@@ -121,7 +121,8 @@ function ReportsPage() {
         const entradas = movs.filter((m) => m.tipo === "entrada").reduce((s, m) => s + m.quantidade, 0);
         const saidas = movs.filter((m) => m.tipo === "saida").reduce((s, m) => s + m.quantidade, 0);
         const pecas = movs.reduce((s, m) => s + ((m as { pecas?: number | null }).pecas ?? 0), 0);
-        return { product: p, entradas, saidas, pecas, movs: movs.length };
+        const quilos = movs.reduce((s, m) => s + Number((m as { quilos?: number | null }).quilos ?? 0), 0);
+        return { product: p, entradas, saidas, pecas, quilos, movs: movs.length };
 
       })
       .sort((a, b) => a.product.nome.localeCompare(b.product.nome));
@@ -319,6 +320,7 @@ function ReportsPage() {
                   <th className="text-right px-3 py-2 font-medium">Entradas</th>
                   <th className="text-right px-3 py-2 font-medium">Saídas</th>
                   <th className="text-right px-3 py-2 font-medium">Peças</th>
+                  <th className="text-right px-3 py-2 font-medium">Quilos</th>
                   <th className="text-right px-3 py-2 font-medium">Estoque atual</th>
                   <th className="text-left px-3 py-2 font-medium">Última reposição</th>
                 </tr>
@@ -326,12 +328,12 @@ function ReportsPage() {
               <tbody className="divide-y divide-border">
                 {perProduct.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">
                       Sem dados no filtro selecionado.
                     </td>
                   </tr>
                 ) : (
-                  perProduct.map(({ product, entradas, saidas, pecas }) => {
+                  perProduct.map(({ product, entradas, saidas, pecas, quilos }) => {
                     const ultima = (product as { ultima_reposicao?: string | null }).ultima_reposicao;
                     return (
                       <tr key={product.id}>
@@ -340,6 +342,7 @@ function ReportsPage() {
                         <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
                         <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
                         <td className="px-3 py-2 text-right text-muted-foreground">{pecas || "—"}</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{quilos ? `${quilos.toFixed(2)} kg` : "—"}</td>
                         <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
                         <td className="px-3 py-2 text-muted-foreground">
                           {ultima ? new Date(ultima).toLocaleString("pt-BR") : "—"}
@@ -369,12 +372,13 @@ function ReportsPage() {
                     <th className="text-left px-3 py-2 font-medium">Tipo</th>
                     <th className="text-right px-3 py-2 font-medium">Quantidade</th>
                     <th className="text-right px-3 py-2 font-medium">Peças</th>
+                    <th className="text-right px-3 py-2 font-medium">Quilos</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredMovements.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">
+                      <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
 
                         Nenhuma movimentação no período.
                       </td>
@@ -396,6 +400,11 @@ function ReportsPage() {
                           </td>
                           <td className="px-3 py-2 text-right text-muted-foreground">
                             {(m as { pecas?: number | null }).pecas ?? "—"}
+                          </td>
+                          <td className="px-3 py-2 text-right text-muted-foreground">
+                            {(m as { quilos?: number | null }).quilos
+                              ? `${Number((m as { quilos?: number | null }).quilos).toFixed(2)} kg`
+                              : "—"}
                           </td>
 
                         </tr>
@@ -443,6 +452,7 @@ function ReportsPage() {
                 <th className="text-right px-4 py-3 font-medium">Entrada</th>
                 <th className="text-right px-4 py-3 font-medium">Saída</th>
                 <th className="text-right px-4 py-3 font-medium">Peças</th>
+                <th className="text-right px-4 py-3 font-medium">Quilos</th>
                 <th className="text-right px-4 py-3 font-medium">Estoque atual</th>
                 <th className="text-right px-4 py-3 font-medium">Excluir</th>
               </tr>
@@ -450,7 +460,7 @@ function ReportsPage() {
             <tbody className="divide-y divide-border">
               {reports.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
 
                     Nenhum relatório gerado ainda.
                   </td>
@@ -463,6 +473,7 @@ function ReportsPage() {
                     produto_nome?: string | null;
                     product_id?: string | null;
                     total_pecas?: number | null;
+                    total_quilos?: number | null;
                   };
 
                   const ini = rr.periodo_inicio ? new Date(rr.periodo_inicio).toLocaleDateString("pt-BR") : null;
@@ -488,6 +499,7 @@ function ReportsPage() {
                       <td className="px-4 py-3 text-right text-status-success">+{r.total_entrada}</td>
                       <td className="px-4 py-3 text-right text-status-danger">-{r.total_saida}</td>
                       <td className="px-4 py-3 text-right text-muted-foreground">{rr.total_pecas || "—"}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">{rr.total_quilos ? `${Number(rr.total_quilos).toFixed(2)} kg` : "—"}</td>
                       <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
 
                       <td className="px-4 py-3 text-right">

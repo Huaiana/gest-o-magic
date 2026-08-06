@@ -61,12 +61,6 @@ function NewProductPage() {
     queryKey: ["products"],
     queryFn: () => getProductsFn(),
   });
-  const nameOptions = Array.from(new Set(existingProducts.map((p) => p.nome))).sort();
-  const categoryOptions = Array.from(new Set(existingProducts.map((p) => p.categoria))).sort();
-  const unitOptions = Array.from(new Set(existingProducts.map((p) => p.unidade))).sort();
-
-  const existingMatch = existingProducts.find((p) => p.nome === form.nome);
-  const isRestock = Boolean(existingMatch);
   const norm = (s: string) =>
     s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const pimentaG = existingProducts.find(
@@ -75,8 +69,23 @@ function NewProductPage() {
   const pimentaP = existingProducts.find(
     (p) => norm(p.nome).includes("pimenta") && norm(p.nome).includes("pote p"),
   );
-  const showPimentaHelper = isRestock && isPimenta && Boolean(pimentaG || pimentaP);
+  const hasPimenta = Boolean(pimentaG || pimentaP);
+  const nameOptions = Array.from(
+    new Set([
+      ...existingProducts
+        .filter((p) => !norm(p.nome).includes("pimenta"))
+        .map((p) => p.nome),
+      ...(hasPimenta ? ["Pimenta"] : []),
+    ]),
+  ).sort();
+  const categoryOptions = Array.from(new Set(existingProducts.map((p) => p.categoria))).sort();
+  const unitOptions = Array.from(new Set(existingProducts.map((p) => p.unidade))).sort();
+
+  const existingMatch = existingProducts.find((p) => p.nome === form.nome);
+  const showPimentaHelper = nameMode === "select" && isPimenta && hasPimenta;
+  const isRestock = Boolean(existingMatch) || showPimentaHelper;
   const quilosAuto = Number(poteG || 0) * 3 + Number(poteP || 0) * 0.57;
+
 
 
   const invalidate = () => {
@@ -112,13 +121,16 @@ function NewProductPage() {
     if (showPimentaHelper) {
       const when = new Date(form.data_reposicao + "T12:00:00").toISOString();
       const entries = [
-        { produto: pimentaG, qty: Number(poteG || 0) },
-        { produto: pimentaP, qty: Number(poteP || 0) },
+        { produto: pimentaG, qty: Number(poteG || 0), kgUnit: 3 },
+        { produto: pimentaP, qty: Number(poteP || 0), kgUnit: 0.57 },
       ].filter((entry) => entry.produto && entry.qty > 0);
       if (entries.length === 0) {
         setError("Informe a quantidade de potes G e/ou P.");
         return;
       }
+      const autoTotal = entries.reduce((s, e2) => s + e2.qty * e2.kgUnit, 0);
+      const manual = Number(quilos || 0);
+      const factor = manual > 0 && autoTotal > 0 ? manual / autoTotal : 1;
       try {
         for (const entry of entries) {
           await addMovementFn({
@@ -127,6 +139,7 @@ function NewProductPage() {
               tipo: form.tipo,
               quantidade: entry.qty,
               data_movimento: when,
+              quilos: Number((entry.qty * entry.kgUnit * factor).toFixed(2)),
             },
           });
         }
@@ -134,6 +147,7 @@ function NewProductPage() {
         navigate({ to: "/produtos" });
       } catch (err) {
         setError((err as Error).message);
+
       }
       return;
     }
@@ -367,7 +381,7 @@ function NewProductPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">
-                Quilos (apenas informativo)
+                Quilos (registrado no sistema)
               </label>
               <input
                 type="number"
@@ -379,9 +393,10 @@ function NewProductPage() {
                 placeholder={quilosAuto > 0 ? `Ex: ${quilosAuto.toFixed(2)} kg` : "Ex: 3 kg"}
               />
               <p className="text-xs text-muted-foreground mt-1.5">
-                Referência: {quilosAuto.toFixed(2)} kg (Pote G 3 kg + Pote P 0,57 kg). Não altera a
-                quantidade de potes registrada.
+                Sugestão: {quilosAuto.toFixed(2)} kg (Pote G 3 kg + Pote P 0,57 kg). O valor é
+                gravado na movimentação e não altera a quantidade de potes.
               </p>
+
             </div>
           </div>
         )}
@@ -457,7 +472,7 @@ function NewProductPage() {
                 <div className="border-t border-border pt-3 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
-                      Quantidade de peças (apenas informativo)
+                      Quantidade de peças (registrada no sistema)
                     </label>
                     <input
                       type="number"
@@ -474,7 +489,7 @@ function NewProductPage() {
                           {Math.floor(Number(form.quantidade) / bifesPorAlmoco)} almoços.
                         </>
                       ) : (
-                        "Registro de referência: não altera a quantidade de almoços nem a quantidade a repor."
+                        "Fica gravado na movimentação e no relatório; não altera a quantidade de almoços nem a quantidade a repor."
                       )}
                     </p>
                   </div>

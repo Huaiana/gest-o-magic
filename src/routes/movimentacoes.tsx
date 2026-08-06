@@ -39,6 +39,8 @@ type Movement = {
   unidade: string;
   data_movimento: string;
   pecas?: number | null;
+  quilos?: number | null;
+
   products?: { nome: string } | null;
 };
 
@@ -246,13 +248,15 @@ function MovementsPage() {
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Qtd</th>
                 <th className="text-left px-4 py-3 font-medium">Peças</th>
+                <th className="text-left px-4 py-3 font-medium">Quilos</th>
+
                 <th className="text-right px-4 py-3 font-medium no-print">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {lista.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
 
                     Nenhuma movimentação registrada.
                   </td>
@@ -290,6 +294,11 @@ function MovementsPage() {
                     <td className="px-4 py-3 text-muted-foreground">
                       {m.pecas ? `${m.pecas} peça${m.pecas === 1 ? "" : "s"}` : "—"}
                     </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {m.quilos ? `${Number(m.quilos).toFixed(2)} kg` : "—"}
+                    </td>
+
+
 
                     <td className="px-4 py-3 text-right no-print">
                       <div className="flex items-center justify-end gap-2">
