@@ -45,6 +45,11 @@ function NewProductPage() {
     : ratioOptions[0];
   const showPecaHelper = isContraFile || isFileMignon;
   const [pecas, setPecas] = useState("");
+  const isPimenta = normalizedNome.includes("pimenta");
+  const [poteG, setPoteG] = useState("");
+  const [poteP, setPoteP] = useState("");
+  const [quilos, setQuilos] = useState("");
+
   
 
   const queryClient = useQueryClient();
