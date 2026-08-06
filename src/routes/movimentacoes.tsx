@@ -39,6 +39,8 @@ type Movement = {
   unidade: string;
   data_movimento: string;
   pecas?: number | null;
+  quilos?: number | null;
+
   products?: { nome: string } | null;
 };
 
