@@ -332,7 +332,63 @@ function NewProductPage() {
           </>
         )}
 
+        {showPimentaHelper && (
+          <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-4">
+            <p className="text-sm font-medium text-foreground">
+              Quantidade de potes de pimenta
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Pote G (3 kg)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={poteG}
+                  onChange={(e) => setPoteG(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Ex: 2 potes"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Pote P (570 g)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={poteP}
+                  onChange={(e) => setPoteP(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Ex: 5 potes"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quilos (apenas informativo)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={quilos}
+                onChange={(e) => setQuilos(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder={quilosAuto > 0 ? `Ex: ${quilosAuto.toFixed(2)} kg` : "Ex: 3 kg"}
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Referência: {quilosAuto.toFixed(2)} kg (Pote G 3 kg + Pote P 0,57 kg). Não altera a
+                quantidade de potes registrada.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!showPimentaHelper && (
         <div>
+
           <label className="block text-sm font-medium text-foreground mb-1.5">
             {isRestock
               ? form.tipo === "entrada"
