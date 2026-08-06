@@ -394,6 +394,10 @@ function ReportsPage() {
                           <td className="px-3 py-2 text-right text-foreground">
                             {m.tipo === "entrada" ? "+" : "-"}{m.quantidade} {m.unidade}
                           </td>
+                          <td className="px-3 py-2 text-right text-muted-foreground">
+                            {(m as { pecas?: number | null }).pecas ?? "—"}
+                          </td>
+
                         </tr>
                       ))
                   )}
