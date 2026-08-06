@@ -361,6 +361,8 @@ export const generateReport = createServerFn({ method: "POST" })
         total_saida: totalSaida,
         estoque_atual: estoqueAtual,
         total_pecas: totalPecas,
+        total_quilos: totalQuilos,
+
         periodo_inicio: startIso,
         periodo_fim: endIso,
         product_id: data.product_id ?? null,
