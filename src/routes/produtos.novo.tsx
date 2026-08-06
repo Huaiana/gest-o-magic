@@ -67,6 +67,17 @@ function NewProductPage() {
 
   const existingMatch = existingProducts.find((p) => p.nome === form.nome);
   const isRestock = Boolean(existingMatch);
+  const norm = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const pimentaG = existingProducts.find(
+    (p) => norm(p.nome).includes("pimenta") && norm(p.nome).includes("pote g"),
+  );
+  const pimentaP = existingProducts.find(
+    (p) => norm(p.nome).includes("pimenta") && norm(p.nome).includes("pote p"),
+  );
+  const showPimentaHelper = isRestock && isPimenta && Boolean(pimentaG || pimentaP);
+  const quilosAuto = Number(poteG || 0) * 3 + Number(poteP || 0) * 0.57;
+
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
