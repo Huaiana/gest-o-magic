@@ -318,6 +318,7 @@ function ReportsPage() {
                   <th className="text-left px-3 py-2 font-medium">Produto</th>
                   <th className="text-right px-3 py-2 font-medium">Entradas</th>
                   <th className="text-right px-3 py-2 font-medium">Saídas</th>
+                  <th className="text-right px-3 py-2 font-medium">Peças</th>
                   <th className="text-right px-3 py-2 font-medium">Estoque atual</th>
                   <th className="text-left px-3 py-2 font-medium">Última reposição</th>
                 </tr>
@@ -325,12 +326,12 @@ function ReportsPage() {
               <tbody className="divide-y divide-border">
                 {perProduct.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
                       Sem dados no filtro selecionado.
                     </td>
                   </tr>
                 ) : (
-                  perProduct.map(({ product, entradas, saidas }) => {
+                  perProduct.map(({ product, entradas, saidas, pecas }) => {
                     const ultima = (product as { ultima_reposicao?: string | null }).ultima_reposicao;
                     return (
                       <tr key={product.id}>
@@ -338,6 +339,7 @@ function ReportsPage() {
                         <td className="px-3 py-2 text-foreground">{product.nome}</td>
                         <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
                         <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{pecas || "—"}</td>
                         <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
                         <td className="px-3 py-2 text-muted-foreground">
                           {ultima ? new Date(ultima).toLocaleString("pt-BR") : "—"}
@@ -345,6 +347,7 @@ function ReportsPage() {
                       </tr>
                     );
                   })
+
                 )}
 
               </tbody>
