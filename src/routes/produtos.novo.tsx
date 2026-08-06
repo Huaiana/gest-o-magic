@@ -101,8 +101,10 @@ function NewProductPage() {
           tipo: form.tipo,
           quantidade: qtd,
           data_movimento: when,
+          pecas: Number(pecas) > 0 ? Number(pecas) : undefined,
         },
       });
+
 
     } else {
       addMutation.mutate({

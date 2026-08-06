@@ -120,7 +120,9 @@ function ReportsPage() {
         const movs = filteredMovements.filter((m) => m.product_id === p.id);
         const entradas = movs.filter((m) => m.tipo === "entrada").reduce((s, m) => s + m.quantidade, 0);
         const saidas = movs.filter((m) => m.tipo === "saida").reduce((s, m) => s + m.quantidade, 0);
-        return { product: p, entradas, saidas, movs: movs.length };
+        const pecas = movs.reduce((s, m) => s + ((m as { pecas?: number | null }).pecas ?? 0), 0);
+        return { product: p, entradas, saidas, pecas, movs: movs.length };
+
       })
       .sort((a, b) => a.product.nome.localeCompare(b.product.nome));
   }, [filteredProducts, filteredMovements]);
@@ -316,6 +318,7 @@ function ReportsPage() {
                   <th className="text-left px-3 py-2 font-medium">Produto</th>
                   <th className="text-right px-3 py-2 font-medium">Entradas</th>
                   <th className="text-right px-3 py-2 font-medium">Saídas</th>
+                  <th className="text-right px-3 py-2 font-medium">Peças</th>
                   <th className="text-right px-3 py-2 font-medium">Estoque atual</th>
                   <th className="text-left px-3 py-2 font-medium">Última reposição</th>
                 </tr>
@@ -323,12 +326,12 @@ function ReportsPage() {
               <tbody className="divide-y divide-border">
                 {perProduct.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
                       Sem dados no filtro selecionado.
                     </td>
                   </tr>
                 ) : (
-                  perProduct.map(({ product, entradas, saidas }) => {
+                  perProduct.map(({ product, entradas, saidas, pecas }) => {
                     const ultima = (product as { ultima_reposicao?: string | null }).ultima_reposicao;
                     return (
                       <tr key={product.id}>
@@ -336,6 +339,7 @@ function ReportsPage() {
                         <td className="px-3 py-2 text-foreground">{product.nome}</td>
                         <td className="px-3 py-2 text-right text-status-success">+{entradas}</td>
                         <td className="px-3 py-2 text-right text-status-danger">-{saidas}</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{pecas || "—"}</td>
                         <td className="px-3 py-2 text-right text-foreground">{product.quantidade} {product.unidade}</td>
                         <td className="px-3 py-2 text-muted-foreground">
                           {ultima ? new Date(ultima).toLocaleString("pt-BR") : "—"}
@@ -343,6 +347,7 @@ function ReportsPage() {
                       </tr>
                     );
                   })
+
                 )}
 
               </tbody>
@@ -363,12 +368,14 @@ function ReportsPage() {
                     <th className="text-left px-3 py-2 font-medium">Data</th>
                     <th className="text-left px-3 py-2 font-medium">Tipo</th>
                     <th className="text-right px-3 py-2 font-medium">Quantidade</th>
+                    <th className="text-right px-3 py-2 font-medium">Peças</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredMovements.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-3 py-6 text-center text-muted-foreground">
+                      <td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">
+
                         Nenhuma movimentação no período.
                       </td>
                     </tr>
@@ -387,6 +394,10 @@ function ReportsPage() {
                           <td className="px-3 py-2 text-right text-foreground">
                             {m.tipo === "entrada" ? "+" : "-"}{m.quantidade} {m.unidade}
                           </td>
+                          <td className="px-3 py-2 text-right text-muted-foreground">
+                            {(m as { pecas?: number | null }).pecas ?? "—"}
+                          </td>
+
                         </tr>
                       ))
                   )}
@@ -431,6 +442,7 @@ function ReportsPage() {
                 <th className="text-left px-4 py-3 font-medium">Produto</th>
                 <th className="text-right px-4 py-3 font-medium">Entrada</th>
                 <th className="text-right px-4 py-3 font-medium">Saída</th>
+                <th className="text-right px-4 py-3 font-medium">Peças</th>
                 <th className="text-right px-4 py-3 font-medium">Estoque atual</th>
                 <th className="text-right px-4 py-3 font-medium">Excluir</th>
               </tr>
@@ -438,7 +450,8 @@ function ReportsPage() {
             <tbody className="divide-y divide-border">
               {reports.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+
                     Nenhum relatório gerado ainda.
                   </td>
                 </tr>
@@ -449,7 +462,9 @@ function ReportsPage() {
                     periodo_fim?: string | null;
                     produto_nome?: string | null;
                     product_id?: string | null;
+                    total_pecas?: number | null;
                   };
+
                   const ini = rr.periodo_inicio ? new Date(rr.periodo_inicio).toLocaleDateString("pt-BR") : null;
                   const fim = rr.periodo_fim ? new Date(rr.periodo_fim).toLocaleDateString("pt-BR") : null;
                   const nomeProduto =
@@ -472,6 +487,7 @@ function ReportsPage() {
                       <td className="px-4 py-3 text-foreground">{nomeProduto}</td>
                       <td className="px-4 py-3 text-right text-status-success">+{r.total_entrada}</td>
                       <td className="px-4 py-3 text-right text-status-danger">-{r.total_saida}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">{rr.total_pecas || "—"}</td>
                       <td className="px-4 py-3 text-right text-foreground">{r.estoque_atual}</td>
 
                       <td className="px-4 py-3 text-right">

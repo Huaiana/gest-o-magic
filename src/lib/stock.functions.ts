@@ -15,6 +15,7 @@ const movementSchema = z.object({
   tipo: z.enum(["entrada", "saida"]),
   quantidade: z.coerce.number().int().min(1),
   data_movimento: z.string().datetime().optional(),
+  pecas: z.coerce.number().int().min(0).optional(),
 });
 
 export const getProducts = createServerFn({ method: "GET" }).handler(async () => {
@@ -166,6 +167,7 @@ export const addMovement = createServerFn({ method: "POST" })
       quantidade: data.quantidade,
       unidade: product.unidade,
       data_movimento: when,
+      pecas: data.pecas ?? null,
     });
 
     if (movError) throw movError;
@@ -329,6 +331,8 @@ export const generateReport = createServerFn({ method: "POST" })
     const totalSaida = movements
       .filter((m) => m.tipo === "saida")
       .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
+    const totalPecas = movements.reduce((sum, m) => sum + (m.pecas ?? 0), 0);
+
 
     const selected = data.product_id
       ? products?.find((p) => p.id === data.product_id)
@@ -347,6 +351,7 @@ export const generateReport = createServerFn({ method: "POST" })
         total_entrada: totalEntrada,
         total_saida: totalSaida,
         estoque_atual: estoqueAtual,
+        total_pecas: totalPecas,
         periodo_inicio: startIso,
         periodo_fim: endIso,
         product_id: data.product_id ?? null,
