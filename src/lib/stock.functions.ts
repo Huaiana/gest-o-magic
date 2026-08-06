@@ -15,6 +15,7 @@ const movementSchema = z.object({
   tipo: z.enum(["entrada", "saida"]),
   quantidade: z.coerce.number().int().min(1),
   data_movimento: z.string().datetime().optional(),
+  pecas: z.coerce.number().int().min(0).optional(),
 });
 
 export const getProducts = createServerFn({ method: "GET" }).handler(async () => {
