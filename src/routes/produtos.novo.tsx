@@ -61,12 +61,6 @@ function NewProductPage() {
     queryKey: ["products"],
     queryFn: () => getProductsFn(),
   });
-  const nameOptions = Array.from(new Set(existingProducts.map((p) => p.nome))).sort();
-  const categoryOptions = Array.from(new Set(existingProducts.map((p) => p.categoria))).sort();
-  const unitOptions = Array.from(new Set(existingProducts.map((p) => p.unidade))).sort();
-
-  const existingMatch = existingProducts.find((p) => p.nome === form.nome);
-  const isRestock = Boolean(existingMatch);
   const norm = (s: string) =>
     s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const pimentaG = existingProducts.find(
@@ -75,8 +69,23 @@ function NewProductPage() {
   const pimentaP = existingProducts.find(
     (p) => norm(p.nome).includes("pimenta") && norm(p.nome).includes("pote p"),
   );
-  const showPimentaHelper = isRestock && isPimenta && Boolean(pimentaG || pimentaP);
+  const hasPimenta = Boolean(pimentaG || pimentaP);
+  const nameOptions = Array.from(
+    new Set([
+      ...existingProducts
+        .filter((p) => !norm(p.nome).includes("pimenta"))
+        .map((p) => p.nome),
+      ...(hasPimenta ? ["Pimenta"] : []),
+    ]),
+  ).sort();
+  const categoryOptions = Array.from(new Set(existingProducts.map((p) => p.categoria))).sort();
+  const unitOptions = Array.from(new Set(existingProducts.map((p) => p.unidade))).sort();
+
+  const existingMatch = existingProducts.find((p) => p.nome === form.nome);
+  const showPimentaHelper = isPimenta && hasPimenta;
+  const isRestock = Boolean(existingMatch) || showPimentaHelper;
   const quilosAuto = Number(poteG || 0) * 3 + Number(poteP || 0) * 0.57;
+
 
 
   const invalidate = () => {
