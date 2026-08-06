@@ -331,6 +331,8 @@ export const generateReport = createServerFn({ method: "POST" })
     const totalSaida = movements
       .filter((m) => m.tipo === "saida")
       .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
+    const totalPecas = movements.reduce((sum, m) => sum + (m.pecas ?? 0), 0);
+
 
     const selected = data.product_id
       ? products?.find((p) => p.id === data.product_id)
