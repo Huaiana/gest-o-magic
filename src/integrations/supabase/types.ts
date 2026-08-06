@@ -101,6 +101,7 @@ export type Database = {
           tipo: string
           total_entrada: number
           total_movimentos: number
+          total_pecas: number
           total_saida: number
         }
         Insert: {
@@ -115,6 +116,7 @@ export type Database = {
           tipo: string
           total_entrada?: number
           total_movimentos?: number
+          total_pecas?: number
           total_saida?: number
         }
         Update: {
@@ -129,6 +131,7 @@ export type Database = {
           tipo?: string
           total_entrada?: number
           total_movimentos?: number
+          total_pecas?: number
           total_saida?: number
         }
         Relationships: [
