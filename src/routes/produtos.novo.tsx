@@ -353,62 +353,24 @@ function NewProductPage() {
                 <div className="border-t border-border pt-3 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
-                      {meatUnitLabel} por peça
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={bifesPorPeca}
-                      onChange={(e) => setBifesPorPeca(Math.max(1, Number(e.target.value) || 1))}
-                      className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      placeholder="Ex: 20"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">
-                      Quantidade de peças
+                      Quantidade de peças (unidades)
                     </label>
                     <input
                       type="number"
                       min="0"
-                      step="any"
-                      value={
-                        Number(form.quantidade) > 0
-                          ? String(Number(form.quantidade) / bifesPorPeca)
-                          : ""
-                      }
-                      onChange={(e) => {
-                        const pecas = Number(e.target.value);
-                        setForm((f) => ({
-                          ...f,
-                          quantidade: e.target.value === "" ? "" : String(pecas * bifesPorPeca),
-                        }));
-                      }}
+                      value={form.quantidade}
+                      onChange={(e) => setForm((f) => ({ ...f, quantidade: e.target.value }))}
                       className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                       placeholder="Ex: 2 peças"
                     />
                     <p className="text-xs text-muted-foreground mt-1.5">
-                      Digite as peças para preencher a quantidade em unidades ({meatUnitLabel})
-                      automaticamente. O estoque continua em unidades.
+                      Cada peça equivale a 1 unidade ({meatUnitLabel}). O estoque continua em
+                      unidades.
                     </p>
                   </div>
-                  {Number(form.quantidade) > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      <span className="text-foreground font-semibold">
-                        {Number(form.quantidade)} un ({meatUnitLabel})
-                      </span>{" "}
-                      ={" "}
-                      <span className="text-foreground font-semibold">
-                        {Math.floor(Number(form.quantidade) / bifesPorPeca)} peça
-                        {Math.floor(Number(form.quantidade) / bifesPorPeca) === 1 ? "" : "s"}
-                      </span>
-                      {Number(form.quantidade) % bifesPorPeca > 0 && (
-                        <> (sobram {Number(form.quantidade) % bifesPorPeca} {meatUnitLabel})</>
-                      )}
-                    </p>
-                  )}
                 </div>
               )}
+
 
               <p className="text-sm text-muted-foreground">
                 {Number(form.quantidade) > 0 ? (
