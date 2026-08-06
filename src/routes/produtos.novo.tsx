@@ -353,23 +353,30 @@ function NewProductPage() {
                 <div className="border-t border-border pt-3 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
-                      Quantidade de peças (unidades)
+                      Quantidade de peças (apenas informativo)
                     </label>
                     <input
                       type="number"
                       min="0"
-                      value={form.quantidade}
-                      onChange={(e) => setForm((f) => ({ ...f, quantidade: e.target.value }))}
+                      value={pecas}
+                      onChange={(e) => setPecas(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                       placeholder="Ex: 2 peças"
                     />
                     <p className="text-xs text-muted-foreground mt-1.5">
-                      Cada peça equivale a 1 unidade ({meatUnitLabel}). O estoque continua em
-                      unidades.
+                      {Number(pecas) > 0 && Number(form.quantidade) > 0 ? (
+                        <>
+                          Com {Number(pecas)} peça{Number(pecas) === 1 ? "" : "s"} foram feitos{" "}
+                          {Math.floor(Number(form.quantidade) / bifesPorAlmoco)} almoços.
+                        </>
+                      ) : (
+                        "Registro de referência: não altera a quantidade de almoços nem a quantidade a repor."
+                      )}
                     </p>
                   </div>
                 </div>
               )}
+
 
 
               <p className="text-sm text-muted-foreground">
