@@ -336,6 +336,11 @@ export const generateReport = createServerFn({ method: "POST" })
       .filter((m) => m.tipo === "saida")
       .reduce((sum, m) => sum + (m.quantidade ?? 0), 0);
     const totalPecas = movements.reduce((sum, m) => sum + (m.pecas ?? 0), 0);
+    const totalQuilos = movements.reduce(
+      (sum, m) => sum + Number((m as { quilos?: number | null }).quilos ?? 0),
+      0,
+    );
+
 
 
     const selected = data.product_id
