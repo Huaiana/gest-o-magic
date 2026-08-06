@@ -368,12 +368,14 @@ function ReportsPage() {
                     <th className="text-left px-3 py-2 font-medium">Data</th>
                     <th className="text-left px-3 py-2 font-medium">Tipo</th>
                     <th className="text-right px-3 py-2 font-medium">Quantidade</th>
+                    <th className="text-right px-3 py-2 font-medium">Peças</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredMovements.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-3 py-6 text-center text-muted-foreground">
+                      <td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">
+
                         Nenhuma movimentação no período.
                       </td>
                     </tr>
