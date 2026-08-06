@@ -442,6 +442,7 @@ function ReportsPage() {
                 <th className="text-left px-4 py-3 font-medium">Produto</th>
                 <th className="text-right px-4 py-3 font-medium">Entrada</th>
                 <th className="text-right px-4 py-3 font-medium">Saída</th>
+                <th className="text-right px-4 py-3 font-medium">Peças</th>
                 <th className="text-right px-4 py-3 font-medium">Estoque atual</th>
                 <th className="text-right px-4 py-3 font-medium">Excluir</th>
               </tr>
@@ -449,7 +450,8 @@ function ReportsPage() {
             <tbody className="divide-y divide-border">
               {reports.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+
                     Nenhum relatório gerado ainda.
                   </td>
                 </tr>
