@@ -246,6 +246,8 @@ function MovementsPage() {
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Qtd</th>
                 <th className="text-left px-4 py-3 font-medium">Peças</th>
+                <th className="text-left px-4 py-3 font-medium">Quilos</th>
+
                 <th className="text-right px-4 py-3 font-medium no-print">Ações</th>
               </tr>
             </thead>
