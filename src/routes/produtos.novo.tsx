@@ -105,10 +105,38 @@ function NewProductPage() {
 
   const isPending = addMutation.isPending || movMutation.isPending;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     const qtd = Number(form.quantidade);
+    if (showPimentaHelper) {
+      const when = new Date(form.data_reposicao + "T12:00:00").toISOString();
+      const entries = [
+        { produto: pimentaG, qty: Number(poteG || 0) },
+        { produto: pimentaP, qty: Number(poteP || 0) },
+      ].filter((entry) => entry.produto && entry.qty > 0);
+      if (entries.length === 0) {
+        setError("Informe a quantidade de potes G e/ou P.");
+        return;
+      }
+      try {
+        for (const entry of entries) {
+          await addMovementFn({
+            data: {
+              product_id: entry.produto!.id,
+              tipo: form.tipo,
+              quantidade: entry.qty,
+              data_movimento: when,
+            },
+          });
+        }
+        invalidate();
+        navigate({ to: "/produtos" });
+      } catch (err) {
+        setError((err as Error).message);
+      }
+      return;
+    }
     if (isRestock && existingMatch) {
       const when = new Date(form.data_reposicao + "T12:00:00").toISOString();
       movMutation.mutate({
@@ -133,6 +161,7 @@ function NewProductPage() {
       });
     }
   };
+
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
