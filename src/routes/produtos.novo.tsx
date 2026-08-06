@@ -121,13 +121,16 @@ function NewProductPage() {
     if (showPimentaHelper) {
       const when = new Date(form.data_reposicao + "T12:00:00").toISOString();
       const entries = [
-        { produto: pimentaG, qty: Number(poteG || 0) },
-        { produto: pimentaP, qty: Number(poteP || 0) },
+        { produto: pimentaG, qty: Number(poteG || 0), kgUnit: 3 },
+        { produto: pimentaP, qty: Number(poteP || 0), kgUnit: 0.57 },
       ].filter((entry) => entry.produto && entry.qty > 0);
       if (entries.length === 0) {
         setError("Informe a quantidade de potes G e/ou P.");
         return;
       }
+      const autoTotal = entries.reduce((s, e2) => s + e2.qty * e2.kgUnit, 0);
+      const manual = Number(quilos || 0);
+      const factor = manual > 0 && autoTotal > 0 ? manual / autoTotal : 1;
       try {
         for (const entry of entries) {
           await addMovementFn({
@@ -136,6 +139,7 @@ function NewProductPage() {
               tipo: form.tipo,
               quantidade: entry.qty,
               data_movimento: when,
+              quilos: Number((entry.qty * entry.kgUnit * factor).toFixed(2)),
             },
           });
         }
@@ -143,6 +147,7 @@ function NewProductPage() {
         navigate({ to: "/produtos" });
       } catch (err) {
         setError((err as Error).message);
+
       }
       return;
     }
