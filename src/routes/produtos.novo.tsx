@@ -82,7 +82,7 @@ function NewProductPage() {
   const unitOptions = Array.from(new Set(existingProducts.map((p) => p.unidade))).sort();
 
   const existingMatch = existingProducts.find((p) => p.nome === form.nome);
-  const showPimentaHelper = isPimenta && hasPimenta;
+  const showPimentaHelper = nameMode === "select" && isPimenta && hasPimenta;
   const isRestock = Boolean(existingMatch) || showPimentaHelper;
   const quilosAuto = Number(poteG || 0) * 3 + Number(poteP || 0) * 0.57;
 
