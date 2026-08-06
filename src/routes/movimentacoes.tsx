@@ -245,13 +245,15 @@ function MovementsPage() {
                 <th className="text-left px-4 py-3 font-medium">Categoria</th>
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
                 <th className="text-left px-4 py-3 font-medium">Qtd</th>
+                <th className="text-left px-4 py-3 font-medium">Peças</th>
                 <th className="text-right px-4 py-3 font-medium no-print">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {lista.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+
                     Nenhuma movimentação registrada.
                   </td>
                 </tr>
