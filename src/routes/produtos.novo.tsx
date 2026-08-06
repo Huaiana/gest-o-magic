@@ -393,9 +393,10 @@ function NewProductPage() {
                 placeholder={quilosAuto > 0 ? `Ex: ${quilosAuto.toFixed(2)} kg` : "Ex: 3 kg"}
               />
               <p className="text-xs text-muted-foreground mt-1.5">
-                Referência: {quilosAuto.toFixed(2)} kg (Pote G 3 kg + Pote P 0,57 kg). Não altera a
-                quantidade de potes registrada.
+                Sugestão: {quilosAuto.toFixed(2)} kg (Pote G 3 kg + Pote P 0,57 kg). O valor é
+                gravado na movimentação e não altera a quantidade de potes.
               </p>
+
             </div>
           </div>
         )}
