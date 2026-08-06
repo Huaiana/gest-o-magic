@@ -462,7 +462,9 @@ function ReportsPage() {
                     periodo_fim?: string | null;
                     produto_nome?: string | null;
                     product_id?: string | null;
+                    total_pecas?: number | null;
                   };
+
                   const ini = rr.periodo_inicio ? new Date(rr.periodo_inicio).toLocaleDateString("pt-BR") : null;
                   const fim = rr.periodo_fim ? new Date(rr.periodo_fim).toLocaleDateString("pt-BR") : null;
                   const nomeProduto =
