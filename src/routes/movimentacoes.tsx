@@ -287,6 +287,10 @@ function MovementsPage() {
                     <td className="px-4 py-3 text-foreground">
                       {m.quantidade} {m.unidade}
                     </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {m.pecas ? `${m.pecas} peça${m.pecas === 1 ? "" : "s"}` : "—"}
+                    </td>
+
                     <td className="px-4 py-3 text-right no-print">
                       <div className="flex items-center justify-end gap-2">
                         <button
