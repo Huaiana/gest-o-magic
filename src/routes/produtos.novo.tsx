@@ -472,7 +472,7 @@ function NewProductPage() {
                 <div className="border-t border-border pt-3 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
-                      Quantidade de peças (apenas informativo)
+                      Quantidade de peças (registrada no sistema)
                     </label>
                     <input
                       type="number"
