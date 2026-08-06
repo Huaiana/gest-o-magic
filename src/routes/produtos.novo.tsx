@@ -489,7 +489,7 @@ function NewProductPage() {
                           {Math.floor(Number(form.quantidade) / bifesPorAlmoco)} almoços.
                         </>
                       ) : (
-                        "Registro de referência: não altera a quantidade de almoços nem a quantidade a repor."
+                        "Fica gravado na movimentação e no relatório; não altera a quantidade de almoços nem a quantidade a repor."
                       )}
                     </p>
                   </div>
