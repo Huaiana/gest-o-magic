@@ -22,6 +22,7 @@ export type Database = {
           pecas: number | null
           product_id: string
           quantidade: number
+          quilos: number | null
           tipo: string
           unidade: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           pecas?: number | null
           product_id: string
           quantidade: number
+          quilos?: number | null
           tipo: string
           unidade: string
         }
@@ -42,6 +44,7 @@ export type Database = {
           pecas?: number | null
           product_id?: string
           quantidade?: number
+          quilos?: number | null
           tipo?: string
           unidade?: string
         }
@@ -102,6 +105,7 @@ export type Database = {
           total_entrada: number
           total_movimentos: number
           total_pecas: number
+          total_quilos: number
           total_saida: number
         }
         Insert: {
@@ -117,6 +121,7 @@ export type Database = {
           total_entrada?: number
           total_movimentos?: number
           total_pecas?: number
+          total_quilos?: number
           total_saida?: number
         }
         Update: {
@@ -132,6 +137,7 @@ export type Database = {
           total_entrada?: number
           total_movimentos?: number
           total_pecas?: number
+          total_quilos?: number
           total_saida?: number
         }
         Relationships: [
