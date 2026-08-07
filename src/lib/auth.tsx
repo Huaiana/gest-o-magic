@@ -48,14 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn: (username, password) => {
       const creds = readCredentials();
       if (username.trim() === creds.username && password === creds.password) {
-        window.localStorage.setItem(SESSION_KEY, creds.username);
+        window.sessionStorage.setItem(SESSION_KEY, creds.username);
         setUser(creds.username);
         return true;
       }
       return false;
     },
     signOut: () => {
-      window.localStorage.removeItem(SESSION_KEY);
+      window.sessionStorage.removeItem(SESSION_KEY);
       setUser(null);
     },
     changeCredentials: (currentPassword, next) => {
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password: next.password,
       };
       window.localStorage.setItem(CRED_KEY, JSON.stringify(updated));
-      window.localStorage.setItem(SESSION_KEY, updated.username);
+      window.sessionStorage.setItem(SESSION_KEY, updated.username);
       setUser(updated.username);
       return true;
     },
