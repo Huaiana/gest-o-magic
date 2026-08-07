@@ -38,3 +38,6 @@ dist-ssr
 *.sln
 *.sw?
 >>>>>>> 1f557251fc4c0360ed1736c4399e74e916c6d861
+
+# Local Netlify folder
+.netlify
