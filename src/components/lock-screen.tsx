@@ -72,13 +72,20 @@ export function LockScreen() {
         )}
 
         {mode === "login" ? (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Usuário</label>
               <input
                 type="text"
+                name="estoque-user"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                data-lpignore="true"
+                data-form-type="other"
                 className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 placeholder="Digite seu usuário"
                 required
@@ -89,8 +96,15 @@ export function LockScreen() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="estoque-pass"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  data-lpignore="true"
+                  data-form-type="other"
                   className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 pr-10"
                   placeholder="Digite sua senha"
                   required
