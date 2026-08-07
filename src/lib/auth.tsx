@@ -35,7 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<string | null>(null);
 
   useEffect(() => {
-    setUser(window.localStorage.getItem(SESSION_KEY));
+    // sessão válida apenas enquanto a aba estiver aberta:
+    // ao abrir o sistema novamente, a tela de login é exigida
+    window.localStorage.removeItem(SESSION_KEY);
+    setUser(window.sessionStorage.getItem(SESSION_KEY));
     setReady(true);
   }, []);
 
