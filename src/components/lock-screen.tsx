@@ -72,7 +72,7 @@ export function LockScreen() {
         )}
 
         {mode === "login" ? (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Usuário</label>
               <input
