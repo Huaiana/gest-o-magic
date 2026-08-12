@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
+  Navigate,
   createRootRouteWithContext,
   useRouter,
   HeadContent,
@@ -133,9 +134,18 @@ function RootComponent() {
 
 function AuthGate() {
   const { ready, user } = useAuth();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   if (!ready) {
     return <div className="min-h-screen bg-background" />;
+  }
+
+  // Allow the public login route to render without authentication
+  if (pathname === "/login") {
+    if (user) {
+      return <Navigate to="/dashboard" />;
+    }
+    return <Outlet />;
   }
 
   if (!user) {
