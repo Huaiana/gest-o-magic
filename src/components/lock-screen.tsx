@@ -16,7 +16,8 @@ export function LockScreen() {
         <img
           src="/logoESync.jpeg"
           alt="EstoqueSync"
-          className="relative w-56 sm:w-72 rounded-[2rem] shadow-2xl animate-spin transition-transform duration-300 group-hover:scale-105"
+          style={{ animation: "float 3s ease-in-out infinite" }}
+          className="relative w-56 sm:w-72 rounded-[2rem] shadow-2xl transition-transform duration-300 group-hover:scale-105"
         />
       </button>
       <p className="mt-8 text-sm text-muted-foreground flex items-center gap-1.5">
