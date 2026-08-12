@@ -6,6 +6,7 @@ import logoAsset from "../assets/logoESync.jpg.asset.json";
 export function LockScreen() {
   const { signIn, changeCredentials } = useAuth();
   const [mode, setMode] = useState<"login" | "change">("login");
+  const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
