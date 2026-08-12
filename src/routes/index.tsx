@@ -16,6 +16,13 @@ function LandingPage() {
     <div className="flex flex-col gap-16 py-8">
       {/* Hero Section */}
       <section className="text-center max-w-3xl mx-auto">
+        <Link to="/login" className="inline-block mb-6 group">
+  <img 
+    src="/logoESync.jpeg" 
+    alt="EstoqueSync Logo" 
+    className="w-32 h-32 mx-auto rounded-2xl shadow-lg animate-spin cursor-pointer transition-transform group-hover:scale-105" 
+  />
+</Link>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
