@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Box, LogIn, Eye, EyeOff, Lock } from "lucide-react";
+import { LogIn, Eye, EyeOff, Lock } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import logoAsset from "../assets/logoESync.jpg.asset.json";
 
 export function LockScreen() {
   const { signIn, changeCredentials } = useAuth();
   const [mode, setMode] = useState<"login" | "change">("login");
+  const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,19 +52,46 @@ export function LockScreen() {
     setInfo("Credenciais atualizadas. Acesso liberado.");
   };
 
+  if (!showLogin) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-10">
+        <button
+          type="button"
+          onClick={() => setShowLogin(true)}
+          aria-label="Acessar o sistema"
+          className="group relative outline-none"
+        >
+          <span className="absolute inset-0 rounded-[2rem] bg-primary/40 blur-3xl animate-logo-glow" />
+          <img
+            src={logoAsset.url}
+            alt="EstoqueSync"
+            className="relative w-56 sm:w-72 rounded-[2rem] shadow-2xl animate-logo-float transition-transform duration-300 group-hover:scale-105"
+          />
+        </button>
+        <p className="mt-8 text-sm text-muted-foreground flex items-center gap-1.5">
+          <Lock className="w-3.5 h-3.5" />
+          Clique no logo para acessar o sistema
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-xl">
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-xl animate-fade-in">
         <div className="text-center mb-8">
-          <div className="bg-primary p-3 rounded-xl inline-flex items-center justify-center mb-4">
-            <Box className="w-8 h-8 text-white" />
-          </div>
+          <img
+            src={logoAsset.url}
+            alt="EstoqueSync"
+            className="w-20 h-20 rounded-2xl mx-auto mb-4 shadow-lg animate-logo-float"
+          />
           <h1 className="text-2xl font-bold text-foreground">EstoqueSync</h1>
           <p className="text-sm text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
             <Lock className="w-3.5 h-3.5" />
             Sistema bloqueado. Faça login para continuar.
           </p>
         </div>
+
 
         {error && (
           <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg mb-4">{error}</div>
