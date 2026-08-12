@@ -57,9 +57,12 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-xl animate-fade-in">
       <div className="text-center mb-8">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-          <Lock className="w-10 h-10 text-primary" />
-        </div>
+        <img
+          src="/logoESync.jpeg"
+          alt="EstoqueSync"
+          style={{ animation: "float 3s ease-in-out infinite" }}
+          className="w-20 h-20 rounded-2xl mx-auto mb-4 shadow-lg"
+        />
         <h1 className="text-2xl font-bold text-foreground">EstoqueSync</h1>
         <p className="text-sm text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
           <Lock className="w-3.5 h-3.5" />
