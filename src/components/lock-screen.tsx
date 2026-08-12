@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Box, LogIn, Eye, EyeOff, Lock } from "lucide-react";
+import { LogIn, Eye, EyeOff, Lock } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import logoAsset from "../assets/logoESync.jpg.asset.json";
 
 export function LockScreen() {
   const { signIn, changeCredentials } = useAuth();
