@@ -16,21 +16,14 @@ function LandingPage() {
     <div className="flex flex-col gap-16 py-8">
       {/* Hero Section */}
       <section className="text-center max-w-3xl mx-auto">
-        <Link to="/login" className="inline-block mb-6 group">
+        <Link to="/login" className="inline-block mb-10 group">
           <img
             src="/logoESync.png"
             alt="EstoqueSync Logo"
             style={{ animation: "float 3s ease-in-out infinite" }}
-            className="w-32 h-32 mx-auto rounded-2xl shadow-lg cursor-pointer transition-transform duration-300 group-hover:scale-105"
+            className="w-40 h-40 mx-auto rounded-2xl shadow-2xl shadow-primary/20 cursor-pointer transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-          </span>
-          Sistema de Gestão de Estoque Simplificado
-        </div>
 
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground tracking-tight mb-6">
           Gestão de Estoque <span className="text-primary">Inteligente</span>
