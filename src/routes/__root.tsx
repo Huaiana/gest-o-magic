@@ -155,6 +155,7 @@ function AuthGate() {
 
   return (
     <>
+      <IdleTimeout />
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <main className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
