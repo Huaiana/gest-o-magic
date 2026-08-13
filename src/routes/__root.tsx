@@ -15,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider, useAuth } from "../lib/auth";
 import { LockScreen } from "../components/lock-screen";
+import { IdleTimeout } from "../components/idle-timeout";
 import { Box, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 
