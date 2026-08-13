@@ -18,7 +18,7 @@ function LandingPage() {
       <section className="text-center max-w-3xl mx-auto">
         <Link to="/login" className="inline-block mb-6 group">
           <img
-            src="/logoESync.jpeg"
+            src="/logoESync.png"
             alt="EstoqueSync Logo"
             style={{ animation: "float 3s ease-in-out infinite" }}
             className="w-32 h-32 mx-auto rounded-2xl shadow-lg cursor-pointer transition-transform duration-300 group-hover:scale-105"
