@@ -14,7 +14,7 @@ export function LockScreen() {
       >
         <span className="absolute inset-0 rounded-[2rem] bg-primary/40 blur-3xl animate-logo-glow" />
         <img
-          src="/logoESync.jpeg"
+          src="/logoESync.png"
           alt="EstoqueSync"
           style={{ animation: "float 3s ease-in-out infinite" }}
           className="relative w-56 sm:w-72 rounded-[2rem] shadow-2xl transition-transform duration-300 group-hover:scale-105"
