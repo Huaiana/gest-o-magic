@@ -1,10 +1,36 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Save, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { addProduct, getProducts, addMovement } from "@/lib/stock.functions";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+
+type Features = { almoco: boolean; pecas: boolean; quilos: boolean; ratios: number[] };
+
+const FEATURE_KEY = "estoquesync:product-features";
+
+function loadFeatures(name: string): Features | null {
+  if (typeof window === "undefined" || !name) return null;
+  try {
+    const all = JSON.parse(window.localStorage.getItem(FEATURE_KEY) || "{}");
+    return all[name.toLowerCase()] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function saveFeatures(name: string, features: Features) {
+  if (typeof window === "undefined" || !name) return;
+  try {
+    const all = JSON.parse(window.localStorage.getItem(FEATURE_KEY) || "{}");
+    all[name.toLowerCase()] = features;
+    window.localStorage.setItem(FEATURE_KEY, JSON.stringify(all));
+  } catch {
+    /* ignore */
+  }
+}
+
 
 
 export const Route = createFileRoute("/produtos/novo")({
