@@ -316,6 +316,119 @@ function NewProductPage() {
           </p>
         </div>
 
+        {form.nome && !showPimentaHelper && (
+          <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-3">
+            <p className="text-sm font-medium text-foreground">
+              Comandos deste produto
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Selecione quais controles quer usar para "{form.nome}". A escolha fica salva para as
+              próximas vezes.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {([
+                { key: "almoco", label: "Porção por almoço" },
+                { key: "pecas", label: "Quantidade de peças" },
+                { key: "quilos", label: "Quantidade em quilos" },
+              ] as const).map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() =>
+                    updateFeatures({
+                      ...features,
+                      [f.key]: !features[f.key],
+                      ratios:
+                        f.key === "almoco" && !features.almoco && features.ratios.length === 0
+                          ? [1]
+                          : features.ratios,
+                    })
+                  }
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                    features[f.key]
+                      ? "bg-primary/20 border-primary text-primary"
+                      : "border-border text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {features.almoco && (
+              <div className="border-t border-border pt-3 space-y-2">
+                <label className="block text-sm font-medium text-foreground">
+                  Porções cadastradas (unidades por almoço)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {features.ratios.map((r) => (
+                    <span
+                      key={r}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border text-sm text-foreground"
+                    >
+                      {r} {meatUnitLabel} = 1 almoço
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateFeatures({
+                            ...features,
+                            ratios: features.ratios.filter((x) => x !== r),
+                          })
+                        }
+                        className="text-status-danger"
+                        aria-label={`Remover ${r}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={ratioInput}
+                    onChange={(e) => setRatioInput(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Ex: 3 (3 unidades = 1 almoço)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const n = Number(ratioInput);
+                      if (n > 0 && !features.ratios.includes(n)) {
+                        updateFeatures({ ...features, ratios: [...features.ratios, n].sort((a, b) => a - b) });
+                      }
+                      setRatioInput("");
+                    }}
+                    className="px-3 py-2 rounded-lg border border-border text-foreground hover:bg-secondary transition text-sm"
+                  >
+                    Adicionar
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  {(["bifes", "filés"] as const).map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => setMeatLabel(l)}
+                      className={`px-3 py-1.5 rounded-lg border text-sm transition ${
+                        meatLabelState === l
+                          ? "bg-primary/20 border-primary text-primary"
+                          : "border-border text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+
+
         {!isRestock && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
