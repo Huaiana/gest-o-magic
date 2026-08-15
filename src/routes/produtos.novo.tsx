@@ -689,8 +689,48 @@ function NewProductPage() {
             </div>
           )}
 
+          {showPecaHelper && !showBifeHelper && (
+            <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quantidade de peças (registrada no sistema)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={pecas}
+                onChange={(e) => setPecas(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: 2 peças"
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Fica gravado na movimentação e no relatório; não altera a quantidade.
+              </p>
+            </div>
+          )}
+
+          {showQuilosHelper && (
+            <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quantidade em quilos (registrada no sistema)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={quilos}
+                onChange={(e) => setQuilos(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: 3 kg"
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Fica gravado na movimentação e no relatório; não altera a quantidade em unidades.
+              </p>
+            </div>
+          )}
+
         </div>
         )}
+
 
 
 
