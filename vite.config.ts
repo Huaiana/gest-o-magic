@@ -15,4 +15,17 @@ export default defineConfig({
   nitro: {
     preset: "cloudflare-pages",
   },
+  vite: {
+    define: {
+      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
+        "https://fawlvoiojdgbwpxrojso.supabase.co"
+      ),
+      "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(
+        "sb_publishable_C97nCcLIJT7ePhMszo1YmQ_54iFkSX0"
+      ),
+      "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(
+        "fawlvoiojdgbwpxrojso"
+      ),
+    },
+  },
 });
