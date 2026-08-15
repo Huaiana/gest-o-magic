@@ -637,6 +637,7 @@ function NewProductPage() {
                 </p>
               </div>
               {showPecaHelper && (
+
                 <div className="border-t border-border pt-3 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
