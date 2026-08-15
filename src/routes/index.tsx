@@ -26,27 +26,11 @@ function LandingPage() {
         </Link>
 
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground tracking-tight mb-6">
-          Gestão de Estoque <span className="text-primary">Inteligente</span>
+          Estoque<span className="text-primary">Sync</span>
         </h1>
         <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed">
-          Controle produtos, acompanhe movimentações e gere relatórios em uma
-          plataforma simples, rápida e eficiente.
+          Toque no ícone para acessar o sistema.
         </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg shadow-primary/20"
-          >
-            Acessar Sistema
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <a
-            href="#recursos"
-            className="inline-flex items-center gap-2 border border-border hover:bg-secondary text-foreground px-6 py-3 rounded-lg font-semibold transition"
-          >
-            Ver Recursos
-          </a>
-        </div>
       </section>
 
       {/* Features Grid */}
