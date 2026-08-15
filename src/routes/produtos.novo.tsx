@@ -213,6 +213,8 @@ function NewProductPage() {
           quantidade: qtd,
           data_movimento: when,
           pecas: Number(pecas) > 0 ? Number(pecas) : undefined,
+          quilos: Number(quilos) > 0 ? Number(quilos) : undefined,
+
         },
       });
 
