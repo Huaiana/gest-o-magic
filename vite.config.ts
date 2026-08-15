@@ -14,9 +14,8 @@ export default defineConfig({
   },
   nitro: {
     preset: "cloudflare-pages",
-    // Adicione esta parte para garantir que o Nitro tenha acesso às variáveis no SSR:
-    envPrefix: ["VITE_", "SUPABASE_"],
   },
+
   vite: {
     define: {
       "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(

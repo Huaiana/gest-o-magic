@@ -1,10 +1,36 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Save, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { addProduct, getProducts, addMovement } from "@/lib/stock.functions";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+
+type Features = { almoco: boolean; pecas: boolean; quilos: boolean; ratios: number[] };
+
+const FEATURE_KEY = "estoquesync:product-features";
+
+function loadFeatures(name: string): Features | null {
+  if (typeof window === "undefined" || !name) return null;
+  try {
+    const all = JSON.parse(window.localStorage.getItem(FEATURE_KEY) || "{}");
+    return all[name.toLowerCase()] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function saveFeatures(name: string, features: Features) {
+  if (typeof window === "undefined" || !name) return;
+  try {
+    const all = JSON.parse(window.localStorage.getItem(FEATURE_KEY) || "{}");
+    all[name.toLowerCase()] = features;
+    window.localStorage.setItem(FEATURE_KEY, JSON.stringify(all));
+  } catch {
+    /* ignore */
+  }
+}
+
 
 
 export const Route = createFileRoute("/produtos/novo")({
@@ -36,21 +62,43 @@ function NewProductPage() {
   const isContraFile = normalizedNome.includes("contra file");
   const isFileMignon = normalizedNome.includes("file mignon") || normalizedNome.includes("mignon");
   const isFileFrango = normalizedNome.includes("frango");
-  const showBifeHelper = isContraFile || isFileMignon || isFileFrango;
-  const meatUnitLabel = isFileFrango ? "filés" : "bifes";
-  const ratioOptions = isFileFrango ? [1, 2, 4] : isFileMignon ? [2] : [3, 4];
+  const isPimenta = normalizedNome.includes("pimenta");
+
+  const defaultFeatures = (): Features => {
+    if (isFileFrango) return { almoco: true, pecas: false, quilos: false, ratios: [1, 2, 4] };
+    if (isFileMignon) return { almoco: true, pecas: true, quilos: false, ratios: [2] };
+    if (isContraFile) return { almoco: true, pecas: true, quilos: false, ratios: [3, 4] };
+    if (isPimenta) return { almoco: false, pecas: false, quilos: true, ratios: [] };
+    return { almoco: false, pecas: false, quilos: false, ratios: [] };
+  };
+
+  const [features, setFeatures] = useState<Features>(defaultFeatures());
+  const [meatLabelState, setMeatLabel] = useState<"bifes" | "filés">("bifes");
+  const [ratioInput, setRatioInput] = useState("");
+
+  // Ao trocar o produto, carrega os recursos salvos ou os padrões do nome
+  useEffect(() => {
+    const stored = loadFeatures(form.nome);
+    setFeatures(stored ?? defaultFeatures());
+    setMeatLabel(isFileFrango ? "filés" : "bifes");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.nome]);
+
+  const updateFeatures = (next: Features) => {
+    setFeatures(next);
+    saveFeatures(form.nome, next);
+  };
+
+  const meatUnitLabel = meatLabelState;
+  const ratioOptions = features.ratios.length > 0 ? features.ratios : [1];
   const [bifesPorAlmocoState, setBifesPorAlmoco] = useState(3);
   const bifesPorAlmoco = ratioOptions.includes(bifesPorAlmocoState)
     ? bifesPorAlmocoState
     : ratioOptions[0];
-  const showPecaHelper = isContraFile || isFileMignon;
   const [pecas, setPecas] = useState("");
-  const isPimenta = normalizedNome.includes("pimenta");
   const [poteG, setPoteG] = useState("");
   const [poteP, setPoteP] = useState("");
   const [quilos, setQuilos] = useState("");
-
-  
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -84,7 +132,12 @@ function NewProductPage() {
   const existingMatch = existingProducts.find((p) => p.nome === form.nome);
   const showPimentaHelper = nameMode === "select" && isPimenta && hasPimenta;
   const isRestock = Boolean(existingMatch) || showPimentaHelper;
+  const showBifeHelper = features.almoco && !showPimentaHelper;
+  const showPecaHelper = features.pecas;
+  const showQuilosHelper = features.quilos && !showPimentaHelper;
   const quilosAuto = Number(poteG || 0) * 3 + Number(poteP || 0) * 0.57;
+
+
 
 
 
@@ -160,6 +213,8 @@ function NewProductPage() {
           quantidade: qtd,
           data_movimento: when,
           pecas: Number(pecas) > 0 ? Number(pecas) : undefined,
+          quilos: Number(quilos) > 0 ? Number(quilos) : undefined,
+
         },
       });
 
@@ -260,6 +315,119 @@ function NewProductPage() {
             produto".
           </p>
         </div>
+
+        {form.nome && !showPimentaHelper && (
+          <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-3">
+            <p className="text-sm font-medium text-foreground">
+              Comandos deste produto
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Selecione quais controles quer usar para "{form.nome}". A escolha fica salva para as
+              próximas vezes.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {([
+                { key: "almoco", label: "Porção por almoço" },
+                { key: "pecas", label: "Quantidade de peças" },
+                { key: "quilos", label: "Quantidade em quilos" },
+              ] as const).map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() =>
+                    updateFeatures({
+                      ...features,
+                      [f.key]: !features[f.key],
+                      ratios:
+                        f.key === "almoco" && !features.almoco && features.ratios.length === 0
+                          ? [1]
+                          : features.ratios,
+                    })
+                  }
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                    features[f.key]
+                      ? "bg-primary/20 border-primary text-primary"
+                      : "border-border text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {features.almoco && (
+              <div className="border-t border-border pt-3 space-y-2">
+                <label className="block text-sm font-medium text-foreground">
+                  Porções cadastradas (unidades por almoço)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {features.ratios.map((r) => (
+                    <span
+                      key={r}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border text-sm text-foreground"
+                    >
+                      {r} {meatUnitLabel} = 1 almoço
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateFeatures({
+                            ...features,
+                            ratios: features.ratios.filter((x) => x !== r),
+                          })
+                        }
+                        className="text-status-danger"
+                        aria-label={`Remover ${r}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={ratioInput}
+                    onChange={(e) => setRatioInput(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Ex: 3 (3 unidades = 1 almoço)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const n = Number(ratioInput);
+                      if (n > 0 && !features.ratios.includes(n)) {
+                        updateFeatures({ ...features, ratios: [...features.ratios, n].sort((a, b) => a - b) });
+                      }
+                      setRatioInput("");
+                    }}
+                    className="px-3 py-2 rounded-lg border border-border text-foreground hover:bg-secondary transition text-sm"
+                  >
+                    Adicionar
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  {(["bifes", "filés"] as const).map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => setMeatLabel(l)}
+                      className={`px-3 py-1.5 rounded-lg border text-sm transition ${
+                        meatLabelState === l
+                          ? "bg-primary/20 border-primary text-primary"
+                          : "border-border text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+
 
         {!isRestock && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -469,6 +637,7 @@ function NewProductPage() {
                 </p>
               </div>
               {showPecaHelper && (
+
                 <div className="border-t border-border pt-3 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -520,8 +689,48 @@ function NewProductPage() {
             </div>
           )}
 
+          {showPecaHelper && !showBifeHelper && (
+            <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quantidade de peças (registrada no sistema)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={pecas}
+                onChange={(e) => setPecas(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: 2 peças"
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Fica gravado na movimentação e no relatório; não altera a quantidade.
+              </p>
+            </div>
+          )}
+
+          {showQuilosHelper && (
+            <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-3">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Quantidade em quilos (registrada no sistema)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={quilos}
+                onChange={(e) => setQuilos(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ex: 3 kg"
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Fica gravado na movimentação e no relatório; não altera a quantidade em unidades.
+              </p>
+            </div>
+          )}
+
         </div>
         )}
+
 
 
 
