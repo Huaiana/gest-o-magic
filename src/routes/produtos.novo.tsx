@@ -62,21 +62,43 @@ function NewProductPage() {
   const isContraFile = normalizedNome.includes("contra file");
   const isFileMignon = normalizedNome.includes("file mignon") || normalizedNome.includes("mignon");
   const isFileFrango = normalizedNome.includes("frango");
-  const showBifeHelper = isContraFile || isFileMignon || isFileFrango;
-  const meatUnitLabel = isFileFrango ? "filés" : "bifes";
-  const ratioOptions = isFileFrango ? [1, 2, 4] : isFileMignon ? [2] : [3, 4];
+  const isPimenta = normalizedNome.includes("pimenta");
+
+  const defaultFeatures = (): Features => {
+    if (isFileFrango) return { almoco: true, pecas: false, quilos: false, ratios: [1, 2, 4] };
+    if (isFileMignon) return { almoco: true, pecas: true, quilos: false, ratios: [2] };
+    if (isContraFile) return { almoco: true, pecas: true, quilos: false, ratios: [3, 4] };
+    if (isPimenta) return { almoco: false, pecas: false, quilos: true, ratios: [] };
+    return { almoco: false, pecas: false, quilos: false, ratios: [] };
+  };
+
+  const [features, setFeatures] = useState<Features>(defaultFeatures());
+  const [meatLabelState, setMeatLabel] = useState<"bifes" | "filés">("bifes");
+  const [ratioInput, setRatioInput] = useState("");
+
+  // Ao trocar o produto, carrega os recursos salvos ou os padrões do nome
+  useEffect(() => {
+    const stored = loadFeatures(form.nome);
+    setFeatures(stored ?? defaultFeatures());
+    setMeatLabel(isFileFrango ? "filés" : "bifes");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.nome]);
+
+  const updateFeatures = (next: Features) => {
+    setFeatures(next);
+    saveFeatures(form.nome, next);
+  };
+
+  const meatUnitLabel = meatLabelState;
+  const ratioOptions = features.ratios.length > 0 ? features.ratios : [1];
   const [bifesPorAlmocoState, setBifesPorAlmoco] = useState(3);
   const bifesPorAlmoco = ratioOptions.includes(bifesPorAlmocoState)
     ? bifesPorAlmocoState
     : ratioOptions[0];
-  const showPecaHelper = isContraFile || isFileMignon;
   const [pecas, setPecas] = useState("");
-  const isPimenta = normalizedNome.includes("pimenta");
   const [poteG, setPoteG] = useState("");
   const [poteP, setPoteP] = useState("");
   const [quilos, setQuilos] = useState("");
-
-  
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -110,7 +132,12 @@ function NewProductPage() {
   const existingMatch = existingProducts.find((p) => p.nome === form.nome);
   const showPimentaHelper = nameMode === "select" && isPimenta && hasPimenta;
   const isRestock = Boolean(existingMatch) || showPimentaHelper;
+  const showBifeHelper = features.almoco && !showPimentaHelper;
+  const showPecaHelper = features.pecas;
+  const showQuilosHelper = features.quilos && !showPimentaHelper;
   const quilosAuto = Number(poteG || 0) * 3 + Number(poteP || 0) * 0.57;
+
+
 
 
 
