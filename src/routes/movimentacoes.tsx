@@ -54,6 +54,9 @@ function MovementsPage() {
   const [editQty, setEditQty] = useState("");
   const [editType, setEditType] = useState<"entrada" | "saida">("entrada");
   const [editDate, setEditDate] = useState("");
+  const [editPecas, setEditPecas] = useState("");
+  const [editQuilos, setEditQuilos] = useState("");
+
   const [error, setError] = useState("");
   const [emitidoEm, setEmitidoEm] = useState("");
   useEffect(() => {
