@@ -37,13 +37,17 @@ export const Route = createFileRoute("/produtos/novo")({
   head: () => ({
     meta: [
       { title: "Novo Produto - EstoqueSync" },
-      { name: "description", content: "Cadastre um novo produto no estoque." },
+      { name: "description", content: "Cadastre um novo produto ou registre reposição." },
     ],
+  }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    modo: search["modo"] === "novo" ? ("novo" as const) : ("reposicao" as const),
   }),
   component: NewProductPage,
 });
 
 function NewProductPage() {
+  const { modo } = Route.useSearch();
   const [form, setForm] = useState({
     nome: "",
     categoria: "",
@@ -54,7 +58,10 @@ function NewProductPage() {
   });
 
   const [error, setError] = useState("");
-  const [nameMode, setNameMode] = useState<"select" | "new">("select");
+  const [nameMode, setNameMode] = useState<"select" | "new">(
+    modo === "novo" ? "new" : "select",
+  );
+
   const normalizedNome = form.nome
     .toLowerCase()
     .normalize("NFD")
