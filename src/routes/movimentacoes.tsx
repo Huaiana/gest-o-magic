@@ -54,6 +54,9 @@ function MovementsPage() {
   const [editQty, setEditQty] = useState("");
   const [editType, setEditType] = useState<"entrada" | "saida">("entrada");
   const [editDate, setEditDate] = useState("");
+  const [editPecas, setEditPecas] = useState("");
+  const [editQuilos, setEditQuilos] = useState("");
+
   const [error, setError] = useState("");
   const [emitidoEm, setEmitidoEm] = useState("");
   useEffect(() => {
@@ -90,7 +93,10 @@ function MovementsPage() {
     setEditQty(String(m.quantidade));
     setEditType(m.tipo as "entrada" | "saida");
     setEditDate(new Date(m.data_movimento).toISOString().slice(0, 16));
+    setEditPecas(m.pecas != null ? String(m.pecas) : "");
+    setEditQuilos(m.quilos != null ? String(m.quilos) : "");
   };
+
 
   const [filtro, setFiltro] = useState<"todas" | "entrada" | "saida">("todas");
   const navigate = useNavigate();
@@ -386,6 +392,40 @@ function MovementsPage() {
               />
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Quantidade de peças
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={editPecas}
+                  onChange={(e) => setEditPecas(e.target.value)}
+                  placeholder="Ex: 2 peças"
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Quilos
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editQuilos}
+                  onChange={(e) => setEditQuilos(e.target.value)}
+                  placeholder="Ex: 3 kg"
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Peças e quilos podem ser preenchidos depois; ficam gravados na movimentação e no
+              relatório sem alterar a quantidade em unidades.
+            </p>
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setEditing(null)}
@@ -404,9 +444,12 @@ function MovementsPage() {
                       data_movimento: editDate
                         ? new Date(editDate).toISOString()
                         : undefined,
+                      pecas: editPecas === "" ? null : Number(editPecas),
+                      quilos: editQuilos === "" ? null : Number(editQuilos),
                     },
                   })
                 }
+
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition disabled:opacity-70"
               >
                 <Save className="w-4 h-4" />

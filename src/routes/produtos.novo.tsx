@@ -37,13 +37,18 @@ export const Route = createFileRoute("/produtos/novo")({
   head: () => ({
     meta: [
       { title: "Novo Produto - EstoqueSync" },
-      { name: "description", content: "Cadastre um novo produto no estoque." },
+      { name: "description", content: "Cadastre um novo produto ou registre reposição." },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { modo?: "novo" | "reposicao" } => ({
+    modo: search["modo"] === "novo" ? "novo" : search["modo"] === "reposicao" ? "reposicao" : undefined,
+  }),
+
   component: NewProductPage,
 });
 
 function NewProductPage() {
+  const { modo } = Route.useSearch();
   const [form, setForm] = useState({
     nome: "",
     categoria: "",
@@ -54,7 +59,10 @@ function NewProductPage() {
   });
 
   const [error, setError] = useState("");
-  const [nameMode, setNameMode] = useState<"select" | "new">("select");
+  const [nameMode, setNameMode] = useState<"select" | "new">(
+    modo === "novo" ? "new" : "select",
+  );
+
   const normalizedNome = form.nome
     .toLowerCase()
     .normalize("NFD")
@@ -259,12 +267,43 @@ function NewProductPage() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setNameMode("select");
+            setForm((f) => ({ ...f, nome: "", categoria: "", unidade: "", quantidade: "" }));
+          }}
+          className={`px-3 py-2.5 rounded-lg border font-medium transition ${
+            nameMode === "select"
+              ? "bg-primary/20 border-primary text-primary"
+              : "border-border text-muted-foreground hover:bg-secondary"
+          }`}
+        >
+          Reposição / Saída
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setNameMode("new");
+            setForm((f) => ({ ...f, nome: "", categoria: "", unidade: "", quantidade: "" }));
+          }}
+          className={`px-3 py-2.5 rounded-lg border font-medium transition ${
+            nameMode === "new"
+              ? "bg-primary/20 border-primary text-primary"
+              : "border-border text-muted-foreground hover:bg-secondary"
+          }`}
+        >
+          Cadastrar novo produto
+        </button>
+      </div>
 
       {error && (
         <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg">
           {error}
         </div>
       )}
+
 
       <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
         <div>
