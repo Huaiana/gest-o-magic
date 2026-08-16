@@ -93,7 +93,10 @@ function MovementsPage() {
     setEditQty(String(m.quantidade));
     setEditType(m.tipo as "entrada" | "saida");
     setEditDate(new Date(m.data_movimento).toISOString().slice(0, 16));
+    setEditPecas(m.pecas != null ? String(m.pecas) : "");
+    setEditQuilos(m.quilos != null ? String(m.quilos) : "");
   };
+
 
   const [filtro, setFiltro] = useState<"todas" | "entrada" | "saida">("todas");
   const navigate = useNavigate();
