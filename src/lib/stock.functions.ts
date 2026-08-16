@@ -266,7 +266,10 @@ export const updateMovement = createServerFn({ method: "POST" })
       quantidade: data.quantidade,
       tipo: data.tipo,
       ...(data.data_movimento ? { data_movimento: data.data_movimento } : {}),
+      ...(data.pecas !== undefined ? { pecas: data.pecas ?? null } : {}),
+      ...(data.quilos !== undefined ? { quilos: data.quilos ?? null } : {}),
     };
+
     const { error } = await supabase.from("movements").update(payload).eq("id", data.id);
     if (error) throw error;
     return { success: true };
