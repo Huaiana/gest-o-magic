@@ -40,9 +40,10 @@ export const Route = createFileRoute("/produtos/novo")({
       { name: "description", content: "Cadastre um novo produto ou registre reposição." },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    modo: search["modo"] === "novo" ? ("novo" as const) : ("reposicao" as const),
+  validateSearch: (search: Record<string, unknown>): { modo?: "novo" | "reposicao" } => ({
+    modo: search["modo"] === "novo" ? "novo" : search["modo"] === "reposicao" ? "reposicao" : undefined,
   }),
+
   component: NewProductPage,
 });
 
