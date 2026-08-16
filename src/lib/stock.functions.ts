@@ -222,9 +222,12 @@ export const updateMovement = createServerFn({ method: "POST" })
         quantidade: z.coerce.number().int().min(1),
         tipo: z.enum(["entrada", "saida"]),
         data_movimento: z.string().datetime().optional(),
+        pecas: z.coerce.number().int().min(0).nullish(),
+        quilos: z.coerce.number().min(0).nullish(),
       })
       .parse(input),
   )
+
   .handler(async ({ data }) => {
     const supabase = createPublicClient();
     const { data: old, error: fetchErr } = await supabase
