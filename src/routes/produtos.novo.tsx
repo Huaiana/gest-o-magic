@@ -267,12 +267,43 @@ function NewProductPage() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setNameMode("select");
+            setForm((f) => ({ ...f, nome: "", categoria: "", unidade: "", quantidade: "" }));
+          }}
+          className={`px-3 py-2.5 rounded-lg border font-medium transition ${
+            nameMode === "select"
+              ? "bg-primary/20 border-primary text-primary"
+              : "border-border text-muted-foreground hover:bg-secondary"
+          }`}
+        >
+          Reposição / Saída
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setNameMode("new");
+            setForm((f) => ({ ...f, nome: "", categoria: "", unidade: "", quantidade: "" }));
+          }}
+          className={`px-3 py-2.5 rounded-lg border font-medium transition ${
+            nameMode === "new"
+              ? "bg-primary/20 border-primary text-primary"
+              : "border-border text-muted-foreground hover:bg-secondary"
+          }`}
+        >
+          Cadastrar novo produto
+        </button>
+      </div>
 
       {error && (
         <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-lg">
           {error}
         </div>
       )}
+
 
       <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
         <div>
